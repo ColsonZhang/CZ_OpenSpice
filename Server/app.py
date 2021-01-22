@@ -2,9 +2,9 @@ import tornado.ioloop   #开启循环，让服务一直等待请求的到来
 import tornado.web      #web服务基本功能都封装在此模块中
 import tornado.options  #从命令行中读取设置
 from tornado.options import define,options  #导入包
-from handler import main, auth
+from handler import main, auth, spice
 # import _thread,threading
-from spice import app_spice
+# from spice import app_spice
 
 define('port',default='8000',help='Listening port',type=int) #定义如何接受传进来的东西
 
@@ -16,7 +16,11 @@ class Application(tornado.web.Application):  #引入Application类，重写方�
             (r'/login',auth.LoginHandler),
             (r'/logout',auth.LogoutHandler),
             (r'/register',auth.RegisterHandler),
-            (r'/spice',main.Spice_Xyce_Handler),
+            # (r'/spice',spice.Spice_1_Handler),
+            (r'/spice2',spice.Spice_2_Handler),
+            (r'/spice3',spice.Spice_3_Handler),
+            (r'/spice4',spice.Spice_4_Handler),
+            (r'/test',main.TestHandler),
         ]
         settings = dict(
             debug = False, #调试模式，修改后自动重启服务，不需要自动重启，生产情况下切勿开启，安全性
@@ -50,7 +54,7 @@ app = Application() #实例化
 if __name__ == '__main__':   #当.py文件被直接运行时，代码块将被运行；当.py文件以模块形式被导入时，代码块不被运行。
     
     # 开启 bokeh 服务
-    app_spice.app_spice_begin()
+    # app_spice.app_spice_begin()
 
     tornado.options.parse_command_line()
     app.listen(options.port)  ##如果一个与define语句中同名的设置在命令行中被给出，那么它将成为全局的options的一个属性 即 options.port 相当于define的url的port

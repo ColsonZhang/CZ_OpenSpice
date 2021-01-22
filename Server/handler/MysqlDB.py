@@ -10,7 +10,7 @@ table_name = "user_info"
 
 # 打开数据库连接
 db = pymysql.connect( database_ip, database_user, database_passwd, database_name )
- 
+print('open mysql success !!!')
 # 使用cursor()方法获取操作游标 
 cursor = db.cursor()
 
