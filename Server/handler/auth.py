@@ -52,11 +52,12 @@ class RegisterHandler(AuthBaseHandler):
         print('registerpost')
 
         username = self.get_argument('username','')
+        email = self.get_argument('email','')
         password1 = self.get_argument('password1','')
         password2 = self.get_argument('password2','')
 
         if username and password1 and (password1 == password2):
-            success = add_user(username,password1)
+            success = add_user(username,password1,email)
             if success:
                 Mongo.connect(DataBase='example',Collection=username)
                 Mongo.update(behavior='register',tags='auth')

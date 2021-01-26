@@ -6,7 +6,7 @@ from handler import main, auth, spice
 # import _thread,threading
 # from spice import app_spice
 
-define('port',default='8000',help='Listening port',type=int) #定义如何接受传进来的东西
+define('port',default='9000',help='Listening port',type=int) #定义如何接受传进来的东西
 
 
 class Application(tornado.web.Application):  #引入Application类，重写方法，这样做的好处在于可以自定义，添加另一些功能
@@ -16,7 +16,7 @@ class Application(tornado.web.Application):  #引入Application类，重写方�
             (r'/login',auth.LoginHandler),
             (r'/logout',auth.LogoutHandler),
             (r'/register',auth.RegisterHandler),
-            # (r'/spice',spice.Spice_1_Handler),
+            (r'/spice1',spice.Spice_1_Handler),
             (r'/spice2',spice.Spice_2_Handler),
             (r'/spice3',spice.Spice_3_Handler),
             (r'/spice4',spice.Spice_4_Handler),
@@ -60,3 +60,4 @@ if __name__ == '__main__':   #当.py文件被直接运行时，代码块将被�
     app.listen(options.port)  ##如果一个与define语句中同名的设置在命令行中被给出，那么它将成为全局的options的一个属性 即 options.port 相当于define的url的port
     print("Server start on port {}".format(str(options.port)))  #提示服务启动占用端口
     tornado.ioloop.IOLoop.current().start()   #执行ioloop
+
