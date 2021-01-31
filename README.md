@@ -10,6 +10,14 @@
 
 能够绘制电路原理图的web前端代码，主要采用mxGraph代码构建。
 
+#### 运行方法
+
+进入`./Schematic`路径下
+
+执行`python server.py`
+
+在浏览器中打开`localhost:8000`进入文件服务器，在文件服务器中打开`./template/schematic.html`文件即可
+
 ### Server
 
 整个项目的后端服务器代码，主要基于Tornado、Bokeh框架开发。
