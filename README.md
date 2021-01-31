@@ -54,6 +54,7 @@
 
   * 增加了元件属性修改功能，增加了对属性的解析
   * 更新了几个元件的icon，可以在这个网站上绘制相应的像素图表http://www.xiconeditor.com/
+  * 增加了按下delete键删除元素的功能
   * 发现了一些bug，例如当进行FlipH和FlipV时端口无法跟着进行翻转
   * 当前的功能界面如下图所示
   * ![avatar](./Schematic/schematic.png)
