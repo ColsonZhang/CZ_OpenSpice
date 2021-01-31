@@ -4,6 +4,8 @@
 
 本项目旨在搭建一个web版本的spice电路仿真平台。当前项目仍处于不断更新中。
 
+本项目在gitee上同步更新，地址为https://gitee.com/colson-zhang/CZ_OpenSpice
+
 ## 项目框架
 
 ### Schematic
