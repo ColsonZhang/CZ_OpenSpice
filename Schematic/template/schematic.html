@@ -127,11 +127,9 @@
 				graph.convertValueToString = function(cell)
 				{
                     var Value_raw = cell.getValue();
-                    var Value_show = '';
-                    if (Value_raw != null){
-                        Value_show = Value_raw.substring(0,4);
-                    }
-                   
+                    var Value_att = ParseAttribute(Value_raw);
+                    var Value_show = Value_att['name'] == 'unknown' ? '' : Value_att['name'];
+
 					return Value_show;
                     
                 };
@@ -160,39 +158,35 @@
                 };
                                 
 				// Stops editing on enter or escape keypress
-				var keyHandler = new mxKeyHandler(graph);
+				// var keyHandler = new mxKeyHandler(graph);
 				var rubberband = new mxRubberband(graph);
                 
                 // Add Vertex
-				var addVertex = function(icon, w, h, style)
-				{
-					var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
-					vertex.setVertex(true);
+				// var addVertex = function(icon, w, h, style)
+				// {
+				// 	var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
+				// 	vertex.setVertex(true);
 				
-					addToolbarItem(graph, toolbar, vertex, icon);
-                };
-				var addVertex_2 = function(icon, w, h, style)
+				// 	addToolbarItem(graph, toolbar, vertex, icon);
+                // };
+				var addVertex_2 = function(icon, w, h, style,value)
 				{
 					var vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
                     vertex.setVertex(true);
-                    vertex.setValue('Name=NMOS;Length=100nm;Width=20nm');
+                    vertex.setValue(value);
 				
 					addToolbarItem(graph, toolbar, vertex, icon);
                 };	
-				addVertex('editors/images/swimlane.gif', 120, 160, 'shape=swimlane;startSize=20;');
-				addVertex('editors/images/rectangle.gif', 100, 40, '');
-				addVertex('editors/images/rounded.gif', 100, 40, 'shape=rounded');
-				addVertex('editors/images/ellipse.gif', 40, 40, 'shape=ellipse');
-				addVertex('editors/images/rhombus.gif', 40, 40, 'shape=rhombus');
-				addVertex('editors/images/triangle.gif', 40, 40, 'shape=triangle');
-				addVertex('editors/images/cylinder.gif', 40, 40, 'shape=cylinder');
-                addVertex('editors/images/actor.gif', 30, 40, 'shape=actor');
-                addVertex('editors/images/actor.gif', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom');
-                addVertex('editors/images/actor.gif', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom');
-                addVertex('editors/images/actor.gif', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom');
-                addVertex('editors/images/actor.gif', 30, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom');
-                addVertex('editors/images/actor.gif', 30, 30, 'shape=gnd;verticalLabelPosition=top;verticalAlign=bottom');
-                addVertex_2('editors/images/actor.gif', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom');
+
+                addVertex_2('icon_ee/res.ico', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom','Name=R;Value=10 Ohm;');
+                addVertex_2('icon_ee/cap.ico', 40, 30, 'shape=capacitor;verticalLabelPosition=top;verticalAlign=bottom','Name=C;Value=10 pF;');
+                addVertex_2('icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=NMOS;Length=100nm;Width=20nm;');
+                addVertex_2('icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=PMOS;Length=100nm;Width=20nm;');
+                addVertex_2('icon_ee/vdd.ico', 40, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom','Name=Vdd;Value=10 V;');
+                addVertex_2('icon_ee/gnd.ico', 40, 40, 'shape=gnd;verticalLabelPosition=top;verticalAlign=bottom','Name=Gnd;');
+                addVertex_2('icon_ee/pin.ico', 40, 40, 'shape=pin;verticalLabelPosition=top;verticalAlign=bottom','Name=Pin;');
+                addVertex_2('icon_ee/pout.ico', 40, 40, 'shape=pout;verticalLabelPosition=top;verticalAlign=bottom','Name=Pout;');
+
                 
 				toolbar.addLine();
                 
@@ -203,10 +197,12 @@
                 bottom_bar(graph);
 
                 // create a window
-				var lorem = 'Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ';
+                var lorem_1 = "Welcom to use CZ_SPICE,here is the user help manual !";
+                var lorem_2 = "To be continued......";
 				var content = document.createElement('div');
-                mxUtils.write(content, lorem);
-				wnd = new mxWindow('Test', content, 520, 50, 220, 200, true, true);
+                mxUtils.writeln(content, lorem_1);
+                mxUtils.writeln(content, lorem_2);
+				wnd = new mxWindow('Help', content, 520, 50, 220, 200, true, true);
 				wnd.setMaximizable(true);
 				wnd.setScrollable(true);
 				wnd.setResizable(true);
@@ -215,13 +211,28 @@
                 
                 showOutline(graph);
 
-				mxLog.show();
+				// mxLog.show();
 			}
 		}
 </script>
-<script type="text/javacript">
-    function ParseValue(value){
-        
+
+<script type="text/javascript">
+    function ParseAttribute(value)
+    {
+        value = value||"name=unknown;" ;
+        value = value.toLowerCase();
+        var attribute = {} ;
+        v = value.replace(" ","");
+        var v_split = v.split(";");
+        for(var i = 0; i<v_split.length; i++)
+        {
+            if(v_split[i].length > 0)
+            {
+				var pro = v_split[i].split("=");
+				attribute[pro[0]] = pro[1];
+            }
+        }
+        return attribute;
     };
 
 </script>
@@ -255,11 +266,25 @@ function showProperties(graph,cell)
         var form = new mxForm('properties');
         var id = form.addText('ID', cell.getId());
         id.setAttribute('readonly', 'true');
-        var value_cell = form.addText('value', cell.getValue());
+
+        var value = cell.getValue();
+        var attribute = ParseAttribute(value);
+        var Text_attribute = {};
+        for(x in attribute){
+            Text_attribute[x] = form.addText(x, attribute[x]);
+        }
+        // var value_cell = form.addText('value', cell.getValue());
+        function AssembleAttribute(){
+            var Str_attribute = '';
+            for(x in attribute){
+                Str_attribute += x + '=' + Text_attribute[x].value + ';';
+            }
+            return Str_attribute ;
+        }
 
         var okFunction = mxUtils.bind(this, function(){
 
-            cell.setValue(value_cell.value);
+            cell.setValue(AssembleAttribute());
             wnd.destroy();
             // cell.value = value ;
         });
@@ -284,10 +309,7 @@ function showProperties(graph,cell)
 	}
 };
 
-function createProperties( graph, cell ){
 
-
-};
 
 </script>
 
@@ -404,33 +426,33 @@ function showOutline(graph)
         // that toggles the overlay for the respective cell
         graph.addListener(mxEvent.CLICK, function(sender, evt)
         {
-            var cell = evt.getProperty('cell');
+            // var cell = evt.getProperty('cell');
             
-            if (cell != null)
-            {
-                var overlays = graph.getCellOverlays(cell);
+            // if (cell != null)
+            // {
+            //     var overlays = graph.getCellOverlays(cell);
                 
-                if (overlays == null)
-                {
-                    // Creates a new overlay with an image and a tooltip
-                    var overlay = new mxCellOverlay(
-                        new mxImage('editors/images/overlays/check.png', 16, 16),
-                        'Overlay tooltip');
+            //     if (overlays == null)
+            //     {
+            //         // Creates a new overlay with an image and a tooltip
+            //         var overlay = new mxCellOverlay(
+            //             new mxImage('editors/images/overlays/check.png', 16, 16),
+            //             'Overlay tooltip');
 
-                    // Installs a handler for clicks on the overlay							
-                    overlay.addListener(mxEvent.CLICK, function(sender, evt2)
-                    {
-                        mxUtils.alert('Overlay clicked');
-                    });
+            //         // Installs a handler for clicks on the overlay							
+            //         overlay.addListener(mxEvent.CLICK, function(sender, evt2)
+            //         {
+            //             mxUtils.alert('Overlay clicked');
+            //         });
                     
-                    // Sets the overlay for the cell in the graph
-                    graph.addCellOverlay(cell, overlay);
-                }
-                else
-                {
-                    graph.removeCellOverlays(cell);
-                }
-            }
+            //         // Sets the overlay for the cell in the graph
+            //         graph.addCellOverlay(cell, overlay);
+            //     }
+            //     else
+            //     {
+            //         graph.removeCellOverlays(cell);
+            //     }
+            // }
         });
         
         // Installs a handler for double click events in the graph
@@ -1158,7 +1180,7 @@ Adds oval markers for edge-to-edge connections.
 
 
 
-<!-- 复制粘贴剪切 -->
+<!-- 复制粘贴剪切删除 -->
 <script type="text/javascript">
     function Clipboard_Handler(graph){
         // Public helper method for shared clipboard.
@@ -1267,35 +1289,7 @@ Adds oval markers for edge-to-edge connections.
             lastPaste = textInput.value;
         };
 
-        // // Deletes the XML for the given cells
-        // var deleteCells = function(graph, cells)
-        // {
-        //     if (cells.length > 0)
-        //     {
-        //         var clones = graph.cloneCells(cells);
-                
-        //         // Checks for orphaned relative children and makes absolute
-        //         for (var i = 0; i < clones.length; i++)
-        //         {
-        //             var state = graph.view.getState(cells[i]);
-                    
-        //             if (state != null)
-        //             {
-        //                 var geo = graph.getCellGeometry(clones[i]);
-                        
-        //                 if (geo != null && geo.relative)
-        //                 {
-        //                     geo.relative = false;
-        //                     geo.x = state.x / state.view.scale - state.view.translate.x;
-        //                     geo.y = state.y / state.view.scale - state.view.translate.y;
-        //                 }
-        //             }
-        //         }
-        //         textInput.value = mxClipboard.cellsToString(clones);
-        //     }
-        //     textInput.select();
-        //     lastPaste = textInput.value;
-        // };
+
         
         // Handles copy event by putting XML for current selection into text input
         mxEvent.addListener(textInput, 'copy', mxUtils.bind(this, function(evt)
@@ -1319,14 +1313,6 @@ Adds oval markers for edge-to-edge connections.
             }
         }));
 
-        // // Handles cut event by removing cells putting XML into text input
-        // mxEvent.addListener(textInput, 'delete', mxUtils.bind(this, function(evt)
-        // {
-        //     if (graph.isEnabled() && !graph.isSelectionEmpty())
-        //     {
-        //         deleteCells(graph, graph.removeCells());
-        //     }
-        // }));
 
         // Merges XML into existing graph and layers
         var importXml = function(xml, dx, dy)
@@ -1483,7 +1469,18 @@ Adds oval markers for edge-to-edge connections.
             }
 
             textInput.select();
-        });        
+        }); 
+
+        // Removes cells when [DELETE] is pressed
+        var keyHandler = new mxKeyHandler(graph);
+        keyHandler.bindKey(46, function(evt)
+        {
+            if (graph.isEnabled())
+            {
+                graph.removeCells();
+            }
+        });
+        
     }
 
 </script>
@@ -1710,10 +1707,10 @@ Adds oval markers for edge-to-edge connections.
             path.moveTo(w * 5/8, h * 1/4);
             path.lineTo(w * 1  , h * 1/4);
             // arrow
-            path.moveTo(w * 6/8 , h * 5/8);
-            path.lineTo(w * 5/8 , h * 3/4);
-            path.moveTo(w * 6/8 , h * 7/8);
-            path.lineTo(w * 5/8 , h * 3/4);            
+            path.moveTo(w * 6/8 , h * 3/8);
+            path.lineTo(w * 5/8 , h * 1/4);
+            path.moveTo(w * 6/8 , h * 1/8);
+            path.lineTo(w * 5/8 , h * 1/4);            
             path.end();
         }
     };
@@ -1752,11 +1749,72 @@ Adds oval markers for edge-to-edge connections.
             path.end();
         }
     };
+
+    function Capacitor_Shape() { };
+    Capacitor_Shape.prototype = new mxCylinder();
+    Capacitor_Shape.prototype.constructor = Capacitor_Shape;
+    Capacitor_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 3/8, h * 0);
+            path.lineTo(w * 3/8, h * 1);  
+            path.moveTo(w * 3/8, h * 1/2);
+            path.lineTo(w * 0  , h * 1/2);
+
+            path.moveTo(w * 5/8, h * 0);
+            path.lineTo(w * 5/8, h * 1);
+            path.moveTo(w * 5/8, h * 1/2);
+            path.lineTo(w * 1  , h * 1/2); 
+
+            path.end();
+        }
+    };
+
+    function Pin_Shape() { };
+    Pin_Shape.prototype = new mxCylinder();
+    Pin_Shape.prototype.constructor = Pin_Shape;
+    Pin_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 0  , h * 1/4);
+            path.lineTo(w * 3/4, h * 1/4);
+            path.lineTo(w * 1  , h * 1/2);
+            path.lineTo(w * 3/4, h * 3/4);
+            path.lineTo(w * 0 , h * 3/4);
+            path.lineTo(w * 0 , h * 1/4);
+
+            path.end();
+        }
+    };
+
+    function Pout_Shape() { };
+    Pout_Shape.prototype = new mxCylinder();
+    Pout_Shape.prototype.constructor = Pout_Shape;
+    Pout_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 1  , h * 1/4);
+            path.lineTo(w * 1/4, h * 1/4);
+            path.lineTo(w * 0  , h * 1/2);
+            path.lineTo(w * 1/4, h * 3/4);
+            path.lineTo(w * 1 , h * 3/4);
+            path.lineTo(w * 1 , h * 1/4);
+
+            path.end();
+        }
+    };
+
     mxCellRenderer.registerShape('resistor', ResistorShape);
     mxCellRenderer.registerShape('n_mosfet', N_Mosfet_Shape);
     mxCellRenderer.registerShape('p_mosfet', P_Mosfet_Shape);
     mxCellRenderer.registerShape('vdd'     , Vdd_Shape);
     mxCellRenderer.registerShape('gnd'     , Gnd_Shape);
+    mxCellRenderer.registerShape('capacitor', Capacitor_Shape);
+    mxCellRenderer.registerShape('pin', Pin_Shape);
+    mxCellRenderer.registerShape('pout', Pout_Shape);
 </script>
 
 <!-- 进行端口限制 -->
@@ -1839,7 +1897,31 @@ Adds oval markers for edge-to-edge connections.
 
     Gnd_Shape.prototype.getPorts = function(){
         return ports_gnd;  
-    }  
+    };
+
+    // ... except for capatiance
+    var ports_capatiance = new Array();
+    ports_capatiance['w'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_capatiance['e'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
+
+    Capacitor_Shape.prototype.getPorts = function(){
+        return ports_capatiance;  
+    };
+
+    // ... except for capatiance
+    var ports_pin = new Array();
+    ports_pin['e'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
+
+    Pin_Shape.prototype.getPorts = function(){
+        return ports_pin;  
+    };
+    // ... except for capatiance
+    var ports_pout = new Array();
+    ports_pout['e'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
+
+    Pout_Shape.prototype.getPorts = function(){
+        return ports_pout;  
+    };
 </script>
 
 
