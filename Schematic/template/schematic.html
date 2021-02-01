@@ -217,23 +217,158 @@
 </script>
 
 <script type="text/javascript">
-    function ParseAttribute(value)
+// 获取属性
+function ParseAttribute(value)
+{
+    value = value||"name=unknown;" ;
+    value = value.toLowerCase();
+    var attribute = {} ;
+    v = value.replace(" ","");
+    var v_split = v.split(";");
+    for(var i = 0; i<v_split.length; i++)
     {
-        value = value||"name=unknown;" ;
-        value = value.toLowerCase();
-        var attribute = {} ;
-        v = value.replace(" ","");
-        var v_split = v.split(";");
-        for(var i = 0; i<v_split.length; i++)
+        if(v_split[i].length > 0)
         {
-            if(v_split[i].length > 0)
-            {
-				var pro = v_split[i].split("=");
-				attribute[pro[0]] = pro[1];
-            }
+            var pro = v_split[i].split("=");
+            attribute[pro[0]] = pro[1];
         }
-        return attribute;
-    };
+    }
+    return attribute;
+};
+
+// 初步从xml中提取有用信息
+function ParseSpice(circuit_xml){
+    var encoder = new mxCodec();
+    var node = encoder.encode(circuit_xml);
+    var content = "";
+    var term = "";
+
+    let reg_1 = /<mxcell.+?\/>/ig;
+    let reg_2 = /<mxcell.+?\/mxcell>/ig;
+    let reg_3 = /<mxGeometry.+?\/>/ig;
+    let reg_4 = /<mxGeometry.+?<\/mxGeometry>/ig;
+    let reg_5 = /vertex="1"/ig;
+
+    let reg_id = /id="(.*?)"/i;
+    let reg_value = /value="(.+?)"/i;
+    let reg_style = /style="(.+?)"/i;
+    let reg_parent = /parent="(.+?)"/i;
+
+    let reg_edge = /edge="(.+?)"/i;
+    let reg_source = /source="(.+?)"/i;
+    let reg_target = /target="(.+?)"/i;
+
+
+    let element_list = [];
+    let wires_list = [];
+    let element = [];
+    let wires = [];
+    let result = {};
+
+    content += mxUtils.getXml(node);
+    // remove heading text
+    term = content.match(reg_1);
+    content = content.replace(term[0],'');
+    content = content.replace(term[1],'');
+    // remove each element_list's geometry
+    term = content.match(reg_2);
+    for(var i=0 ; i<term.length; i++){
+        var geometry = term[i].match(reg_4);
+        if(geometry != null){
+            term[i] = term[i].replace(geometry,'');
+        }
+        else{
+            geometry = term[i].match(reg_3);
+            term[i] = term[i].replace(geometry,'');
+        }
+    }
+    // remove some text
+    for(var i=0; i<term.length; i++){
+        term[i] = term[i].replace("<mxCell","");
+        term[i] = term[i].replace("</mxCell>","");
+        term[i] = term[i].replace(">","");
+    }
+
+    // divide term into element_list and wires_list
+    for(var i=0 ; i<term.length; i++){
+        var vertex = term[i].match(reg_5);
+        if(vertex != null){
+            term[i] = term[i].replace(vertex,"")
+            element_list.push(term[i]);
+        }
+        else{
+            wires_list.push(term[i]);
+        }
+    }
+    // full elements
+    for(var i=0; i<element_list.length; i++){
+        let ele = {};
+        let ele_v = {};
+        let ele_s = {};
+        let temp_ele ;
+        // get id
+        ele['id']     = element_list[i].match(reg_id)[1] ;
+        // get value
+        temp_ele = element_list[i].match(reg_value)[1] ;
+        temp_ele = temp_ele.split(";");
+        for(var j=0; j<temp_ele.length ;j++){
+            let tem = temp_ele[j].split("=");
+            ele_v[tem[0]] = tem[1];
+        }
+        ele['value']  = ele_v ;
+        // get style
+        temp_ele = element_list[i].match(reg_style)[1] ;
+        temp_ele = temp_ele.split(";");
+        for(var j=0; j<temp_ele.length; j++){
+            let tem = temp_ele[j].split("=");
+            ele_s[tem[0]] = tem[1];
+        }
+        ele['style']  = ele_s ;
+        // get parent
+        ele['parent'] = element_list[i].match(reg_parent)[1] ;
+
+        element.push(ele);
+    }
+    // full wires
+    for(var i=0; i<wires_list.length ; i++){
+        let ele = {};
+        let ele_s = {};
+        let temp_ele ;
+
+        // get id
+        ele['id'] = wires_list[i].match(reg_id)[1] ;
+
+        // get style
+        temp_ele = wires_list[i].match(reg_style)[1] ;
+        temp_ele = temp_ele.split(";");
+        for(var j=0; j<temp_ele.length; j++){
+            let tem = temp_ele[j].split("=");
+            ele_s[tem[0]] = tem[1];
+        }
+        ele['style']  = ele_s ;
+
+        // get edge
+        ele['edge'] = wires_list[i].match(reg_edge)[1];
+
+        // get source
+        ele['source'] = wires_list[i].match(reg_source)[1];
+
+        // get target
+        ele['target'] = wires_list[i].match(reg_target)[1];
+
+        wires.push(ele);
+    }
+
+    result['elements'] = element;
+    result['wires'] = wires;
+
+    return result ;
+};
+
+// 根据从xml提取出来的info生成spice网表
+function ExtractSpice(info){
+
+};
 
 </script>
 
@@ -580,34 +715,57 @@ function showOutline(graph)
                 var node = encoder.encode(graph.getModel());
                 mxUtils.popup(mxUtils.getPrettyXml(node), true);
             }));
-            
-			document.body.appendChild(mxUtils.button('Create toolbar entry from selection', function()
+
+
+
+            // Extract SPICE model
+			document.body.appendChild(mxUtils.button('Show SPICE', function()
 			{
-                if (!graph.isSelectionEmpty())
-					{
-						// Creates a copy of the selection array to preserve its state
-						var cells = graph.getSelectionCells();
-						var bounds = graph.getView().getBounds(cells);
+                let content = '';
+                var node = ParseSpice(graph.getModel()); 
+                for(var i=0; i<node['elements'].length; i++){
+                    content += node['elements'][i]['id'] + '\t';
+                    content += node['elements'][i]['value']['Name'] + '\t';
+                    content += node['elements'][i]['style']['shape'] + '\n';
+                };
+
+                for(var i=0; i<node['wires'].length; i++){
+                    content += node['wires'][i]['id'] + '\t';
+                    content += node['wires'][i]['style']['sourcePort'] +'\t';
+                    content += node['wires'][i]['source'] + '\t';
+                    content += node['wires'][i]['target'] + '\n';
+                };
+
+                mxUtils.popup(content, true);
+            }));     
+
+			// document.body.appendChild(mxUtils.button('Create toolbar entry from selection', function()
+			// {
+            //     if (!graph.isSelectionEmpty())
+			// 		{
+			// 			// Creates a copy of the selection array to preserve its state
+			// 			var cells = graph.getSelectionCells();
+			// 			var bounds = graph.getView().getBounds(cells);
 						
-						// Function that is executed when the image is dropped on
-						// the graph. The cell argument points to the cell under
-						// the mousepointer if there is one.
-						var funct = function(graph, evt, cell)
-						{
-							graph.stopEditing(false);
+			// 			// Function that is executed when the image is dropped on
+			// 			// the graph. The cell argument points to the cell under
+			// 			// the mousepointer if there is one.
+			// 			var funct = function(graph, evt, cell)
+			// 			{
+			// 				graph.stopEditing(false);
 			
-							var pt = graph.getPointForEvent(evt);
-							var dx = pt.x - bounds.x;
-							var dy = pt.y - bounds.y;
+			// 				var pt = graph.getPointForEvent(evt);
+			// 				var dx = pt.x - bounds.x;
+			// 				var dy = pt.y - bounds.y;
 							
-							graph.setSelectionCells(graph.importCells(cells, dx, dy, cell));
-						}
+			// 				graph.setSelectionCells(graph.importCells(cells, dx, dy, cell));
+			// 			}
 			
-						// Creates the image which is used as the drag icon (preview)
-						var img = toolbar.addMode(null, 'editors/images/outline.gif', funct);
-						mxUtils.makeDraggable(img, graph, funct);
-					}
-			}));
+			// 			// Creates the image which is used as the drag icon (preview)
+			// 			var img = toolbar.addMode(null, 'editors/images/outline.gif', funct);
+			// 			mxUtils.makeDraggable(img, graph, funct);
+			// 		}
+			// }));
 
 			// Wire-mode
 			var checkbox = document.createElement('input');
