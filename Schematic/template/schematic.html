@@ -365,9 +365,170 @@ function ParseSpice(circuit_xml){
     return result ;
 };
 
-// 根据从xml提取出来的info生成spice网表
-function ExtractSpice(info){
+function NormalizeXML(info){
+    let circuit = [];
+    let netlist = [];
+    let nodes = [];
 
+    for(var i=0; i<info['elements'].length; i++)
+    {
+        let temp = {};
+        temp['id'] = info['elements'][i]['id'];
+        temp['name'] = info['elements'][i]['value']['Name'];
+        temp['type'] = info['elements'][i]['style']['shape'];
+        if(temp['type'] == 'vdd'){
+            temp['port'] = {'vdd': 'vdd'};
+            temp['port_keys'] = ['vdd'];
+            temp['value'] = {'voltage':  info['elements'][i]['value']['Value']};
+        }
+        else if(temp['type'] == 'gnd'){
+            temp['port'] = {'gnd': 'gnd'};
+            temp['port_keys'] = ['gnd'];
+        }
+        else if(temp['type'] == 'n_mosfet' || temp['type'] == 'p_mosfet'){
+            temp['port'] = {'drain': 'd', 'gate': 'g', 'source': 's', 'bulk': 's' };
+            temp['port_keys'] = ['drain','gate','source','bulk'];
+            temp['value'] = {'length':info['elements'][i]['value']['Length'],'width':info['elements'][i]['value']['Width']};
+        }
+        else if(temp['type'] == 'resistor'){
+            temp['port'] = {'pos':'pos', 'neg':'neg'};
+            temp['port_keys'] = ['pos','neg'];
+            temp['value'] = {'value': info['elements'][i]['value']['Value']}
+        }
+        else if(temp['type'] == 'capacitor'){
+            temp['port'] = {'pos':'pos', 'neg':'neg'};
+            temp['port_keys'] = ['pos','neg'];
+            temp['value'] = {'value': info['elements'][i]['value']['Value']}
+        }
+        else if(temp['type'] == 'pin'){
+            temp['port'] = {'pin': 'pin'};
+            temp['port_keys'] = ['pin'];
+        }
+        else if(temp['type'] == 'pout'){
+            temp['port'] = {'pout': 'pout'};
+            temp['port_keys'] = ['pout'];
+        }
+        circuit.push(temp);
+    }
+
+    for(var i=0; i<info['wires'].length; i++)
+    {
+        let temp = {};
+        temp['id'] = info['wires'][i]['id'];
+        temp['node_source'] = info['wires'][i]['source'] +" "+ info['wires'][i]['style']['sourcePort'];
+        temp['node_target'] = info['wires'][i]['target'] +" ";
+        if(info['wires'][i]['style']['targetPort'] != null){
+            temp['node_target'] += info['wires'][i]['style']['targetPort'];
+        }
+        else{
+            temp['node_target'] += 'null';
+        }
+        netlist.push(temp);
+    }
+
+    for(var i=0; i<netlist.length; i++){
+        let temp = [];
+        let index_s = 0;
+        let index_t = 0;
+        let source = netlist[i]['node_source'];
+        let target = netlist[i]['node_target'];
+        if(target.indexOf('null') != -1){
+            let target_id = target.split(" ")[0];
+            let index_id = SearchID(netlist,target_id);
+            index_s = SearchExit(nodes,netlist[index_id]['node_source']);
+            if(index_s == -1){
+                index_t = SearchExit(nodes,netlist[index_id]['node_target']);
+                if(index_t == -1){
+                    temp.push(source);
+                    temp.push(netlist[index_id]['node_source']);
+                    temp.push(netlist[index_id]['node_target']);
+                    nodes.push(temp);   
+                }
+                else{
+                    nodes[index_t].push(source);                     
+                }
+            }
+            else{
+                nodes[index_s].push(source);
+            }
+        }
+        else{
+            index_s = SearchExit(nodes,source);
+            index_t = SearchExit(nodes,target);
+            if(index_s == -1){
+                if(index_t == -1){
+                    temp.push(source);
+                    temp.push(target);
+                    nodes.push(temp);
+                }
+                else{
+                    nodes[index_t].push(source);
+                }
+            }
+            else{
+                if(index_t == -1){
+                    nodes[index_s].push(target);
+                }
+            }
+        }   
+    }
+
+    for(var i=0; i<nodes.length; i++){
+        let node_str = "n" + String(i);
+        for(var j=0; j<nodes[i].length; j++){
+            let node_info = nodes[i][j].split(" ");
+            let node_id = node_info[0];
+            let node_port = node_info[1];
+            let node_index = SearchID(circuit,node_id);
+            if(node_index != -1){
+                // if( node_port == 'gnd' ){
+                //     node_str = "gnd" ;
+                // }
+                circuit[node_index]['port'][node_port] = node_str;
+                if(node_port == 'source'){
+                    circuit[node_index]['port']['bulk'] = circuit[node_index]['port']['source'];
+                }
+            }
+        }
+    }
+    return circuit;
+};
+
+function SearchID(array,id){
+    for(var i=0; i<array.length; i++){
+        if(array[i]['id'] == id){
+            return i;
+        }
+    }
+    return -1;
+}
+
+function SearchExit(array,element){
+    for(var i=0; i<array.length; i++){
+        if(array[i].includes(element)){
+            return i;
+        }
+    }
+    return -1;
+};
+
+// 根据从xml提取出来的info生成spice网表
+function ExtractSpice(circuit){
+    let spice = "";
+    let key ;
+    for(var i=0; i<circuit.length;i++){
+        spice += circuit[i]['name'] + " ";
+        for(var j=0; j<circuit[i]['port_keys'].length; j++){
+            spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            // spice += circuit[i]['port_keys'][j] + " ";
+        }
+        spice += circuit[i]['type'] + " ";
+        for(key in circuit[i]['value']){
+            spice += circuit[i]['value'][key] + " ";
+        }
+        spice += "\n";
+    }
+    return spice;
 };
 
 </script>
@@ -716,24 +877,48 @@ function showOutline(graph)
                 mxUtils.popup(mxUtils.getPrettyXml(node), true);
             }));
 
-
+			document.body.appendChild(mxUtils.button('Show Spice', function()
+			{
+                
+                var node = ParseSpice(graph.getModel()); 
+                var circuit = NormalizeXML(node);
+                let spice = ExtractSpice(circuit);
+                mxUtils.popup(spice, true);
+            }));
 
             // Extract SPICE model
-			document.body.appendChild(mxUtils.button('Show SPICE', function()
+			document.body.appendChild(mxUtils.button('Show Info', function()
 			{
                 let content = '';
                 var node = ParseSpice(graph.getModel()); 
                 for(var i=0; i<node['elements'].length; i++){
-                    content += node['elements'][i]['id'] + '\t';
-                    content += node['elements'][i]['value']['Name'] + '\t';
-                    content += node['elements'][i]['style']['shape'] + '\n';
+                    content += "id " + node['elements'][i]['id'] + '\t';
+                    content += "Name " + node['elements'][i]['value']['Name'] + '\t';
+                    content += "shape " + node['elements'][i]['style']['shape'] + '\t';
+                    if("Value" in node['elements'][i]['value']){
+                        content += "Value " + node['elements'][i]['value']['Value'] + '\t';
+                    }
+                    if("Length" in node['elements'][i]['value']){
+                        content += "Length " + node['elements'][i]['value']['Length'] + '\t';
+                    }
+                    if("Width" in node['elements'][i]['value']){
+                        content += "Width " + node['elements'][i]['value']['Width'] + '\t';
+                    }
+                    content += "\n" ;
                 };
 
                 for(var i=0; i<node['wires'].length; i++){
-                    content += node['wires'][i]['id'] + '\t';
-                    content += node['wires'][i]['style']['sourcePort'] +'\t';
-                    content += node['wires'][i]['source'] + '\t';
-                    content += node['wires'][i]['target'] + '\n';
+                    content += "id " + node['wires'][i]['id'] + '\t';
+                    content += "source " + node['wires'][i]['source'] + '\t';
+                    content += "sourcePort " + node['wires'][i]['style']['sourcePort'] +'\t';
+                    content += "target " + node['wires'][i]['target'] + '\t';
+                    content += "targetPort " ;
+                    if("targetPort" in node['wires'][i]['style']){
+                        content += node['wires'][i]['style']['targetPort'] + '\n';
+                    }
+                    else{
+                        content += "null" +'\n';
+                    }
                 };
 
                 mxUtils.popup(content, true);
@@ -2016,8 +2201,8 @@ Adds oval markers for edge-to-edge connections.
 
     // ... except for n mosfet
     var ports_resistor = new Array();
-    ports_resistor['w'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
-    ports_resistor['e'] = {x: 1, y: 0.5, perimeter: true, constraint: 'east'};
+    ports_resistor['pos'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_resistor['neg'] = {x: 1, y: 0.5, perimeter: true, constraint: 'east'};
 
     ResistorShape.prototype.getPorts = function()
     {
@@ -2026,32 +2211,32 @@ Adds oval markers for edge-to-edge connections.
 
     // ... except for n mosfet
     var ports_nmosfet = new Array();
-    ports_nmosfet['g'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
-    ports_nmosfet['s'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
-    ports_nmosfet['d'] = {x: 1, y: 0.75, perimeter: true, constraint: 'east'};
+    ports_nmosfet['gate'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_nmosfet['drain'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
+    ports_nmosfet['source'] = {x: 1, y: 0.75, perimeter: true, constraint: 'east'};
 
     N_Mosfet_Shape.prototype.getPorts = function(){
         return ports_nmosfet;
     };
     // ... except for p mosfet
     var ports_pmosfet = new Array();
-    ports_pmosfet['g'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
-    ports_pmosfet['s'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
-    ports_pmosfet['d'] = {x: 1, y: 0.75, perimeter: true, constraint: 'east'};
+    ports_pmosfet['gate'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_pmosfet['source'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
+    ports_pmosfet['drain'] = {x: 1, y: 0.75, perimeter: true, constraint: 'east'};
 
     P_Mosfet_Shape.prototype.getPorts = function(){
         return ports_pmosfet;
     };  
     // ... except for vdd
     var ports_vdd = new Array();
-    ports_vdd['s'] = {x: 0.5, y: 1, perimeter: true, constraint: 'south'};
+    ports_vdd['vdd'] = {x: 0.5, y: 1, perimeter: true, constraint: 'south'};
 
     Vdd_Shape.prototype.getPorts = function(){
         return ports_vdd;
     };
     // ... except for gnd
     var ports_gnd = new Array();
-    ports_gnd['n'] = {x: 0.5, y: 0, perimeter: true, constraint: 'north'};
+    ports_gnd['gnd'] = {x: 0.5, y: 0, perimeter: true, constraint: 'north'};
 
     Gnd_Shape.prototype.getPorts = function(){
         return ports_gnd;  
@@ -2059,8 +2244,8 @@ Adds oval markers for edge-to-edge connections.
 
     // ... except for capatiance
     var ports_capatiance = new Array();
-    ports_capatiance['w'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
-    ports_capatiance['e'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
+    ports_capatiance['pos'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_capatiance['neg'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
 
     Capacitor_Shape.prototype.getPorts = function(){
         return ports_capatiance;  
@@ -2068,14 +2253,14 @@ Adds oval markers for edge-to-edge connections.
 
     // ... except for capatiance
     var ports_pin = new Array();
-    ports_pin['e'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
+    ports_pin['pin'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
 
     Pin_Shape.prototype.getPorts = function(){
         return ports_pin;  
     };
     // ... except for capatiance
     var ports_pout = new Array();
-    ports_pout['e'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
+    ports_pout['pout'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
 
     Pout_Shape.prototype.getPorts = function(){
         return ports_pout;  
