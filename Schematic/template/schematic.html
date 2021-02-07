@@ -128,23 +128,33 @@
 				{
                     var Value_raw = cell.getValue();
                     var Value_att = ParseAttribute(Value_raw);
-                    var Value_show = Value_att['name'] == 'unknown' ? '' : Value_att['name'];
+                    var Value_show = '';
+                    if(Value_att['Name'] == 'unknown'){
+                        if(Value_att['name'] != 'unknown'){
+                            Value_show = Value_att['name'];
+                        }
+                    }
+                    else{
+                        Value_show = Value_att['Name'];
+                    }
+
+                    // var Value_show = Value_att['name'] == 'unknown' ? '' : Value_att['name'];
 
 					return Value_show;
                     
                 };
                 // 暂时不允许在此进行修改
                 var cellLabelChanged = graph.cellLabelChanged;
-                graph.cellLabelChanged = function(cell, newValue, autoSize)
+                graph.cellLabelChanged = function(cell, new_value, autoSize)
                 {
-                    // if (mxUtils.isNode(cell.value))
-                    // {
-                    //     // Clones the value for correct undo/redo
-                    //     var elt = cell.value.cloneNode(true);
-                    //     elt.setAttribute('label', newValue);
-                    //     newValue = elt;
-                    // }
-                    // cellLabelChanged.apply(this, arguments);
+
+                    // // Clones the value for correct undo/redo
+                    // var elt = cell.value.cloneNode(true);
+
+                    // newValue = elt;
+                    // autoSize = false;
+
+					// cellLabelChanged.apply(this, arguments);
                 };
 
 				graph.getTooltipForCell = function(cell)
@@ -180,14 +190,17 @@
 
                 addVertex_2('icon_ee/res.ico', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom','Name=R;Value=10 Ohm;');
                 addVertex_2('icon_ee/cap.ico', 40, 30, 'shape=capacitor;verticalLabelPosition=top;verticalAlign=bottom','Name=C;Value=10 pF;');
-                addVertex_2('icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=NMOS;Length=100nm;Width=20nm;');
-                addVertex_2('icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=PMOS;Length=100nm;Width=20nm;');
-                addVertex_2('icon_ee/vdd.ico', 40, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom','Name=Vdd;Value=10 V;');
-                addVertex_2('icon_ee/gnd.ico', 40, 40, 'shape=gnd;verticalLabelPosition=top;verticalAlign=bottom','Name=Gnd;');
+                addVertex_2('icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_NMOS;Length=100nm;Width=20nm;');
+                addVertex_2('icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_PMOS;Length=100nm;Width=20nm;');
+                addVertex_2('icon_ee/vdd.ico', 40, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom','Name=Vdd;');
+                addVertex_2('icon_ee/gnd.ico', 40, 40, 'shape=gnd;verticalLabelPosition=bottom;verticalAlign=top','Name=Gnd;');
                 addVertex_2('icon_ee/pin.ico', 40, 40, 'shape=pin;verticalLabelPosition=top;verticalAlign=bottom','Name=Pin;');
                 addVertex_2('icon_ee/pout.ico', 40, 40, 'shape=pout;verticalLabelPosition=top;verticalAlign=bottom','Name=Pout;');
-
+                addVertex_2('icon_ee/vdc.ico', 40, 40, 'shape=vdc;labelPosition=left;align=right','Name=Vdc;DC=1  V;');
+                addVertex_2('icon_ee/vac.ico', 40, 40, 'shape=vac;labelPosition=left;align=right','Name=Vac;DC=0 V;ACMAG=1 V;ACPHASE=0 deg;');
+                addVertex_2('icon_ee/vsin.ico', 40, 40, 'shape=vsin;labelPosition=left;align=right','Name=Vsin;V0=0 V;VA=1 V;FREQ=1k Hz;TD=0 ;THEAT=0 ;PHASE=0 ;');
                 
+              
 				toolbar.addLine();
                 
                 click_handler(graph);
@@ -220,8 +233,8 @@
 // 获取属性
 function ParseAttribute(value)
 {
-    value = value||"name=unknown;" ;
-    value = value.toLowerCase();
+    value = value||"Name=unknown;" ;
+    // value = value.toLowerCase();
     var attribute = {} ;
     v = value.replace(" ","");
     var v_split = v.split(";");
@@ -379,7 +392,7 @@ function NormalizeXML(info){
         if(temp['type'] == 'vdd'){
             temp['port'] = {'vdd': 'vdd'};
             temp['port_keys'] = ['vdd'];
-            temp['value'] = {'voltage':  info['elements'][i]['value']['Value']};
+            // temp['value'] = {'voltage':  info['elements'][i]['value']['Value']};
         }
         else if(temp['type'] == 'gnd'){
             temp['port'] = {'gnd': 'gnd'};
@@ -407,6 +420,29 @@ function NormalizeXML(info){
         else if(temp['type'] == 'pout'){
             temp['port'] = {'pout': 'pout'};
             temp['port_keys'] = ['pout'];
+        }
+        else if(temp['type'] == 'vdc'){
+            temp['port'] = {'pos': 'pos', 'neg':'neg'};
+            temp['port_keys'] = ['pos','neg'];
+            temp['value'] = {'DC': info['elements'][i]['value']['DC'] }
+        }
+        else if(temp['type'] == 'vac'){
+            temp['port'] = {'pos': 'pos', 'neg':'neg'};
+            temp['port_keys'] = ['pos','neg'];
+            temp['value'] = {'ACMAG': info['elements'][i]['value']['ACMAG'],
+                             'ACPHASE': info['elements'][i]['value']['ACPHASE'],
+                             'DC':info['elements'][i]['value']['DC']}
+        }
+        else if(temp['type'] == 'vsin'){
+            temp['port'] = {'pos': 'pos', 'neg':'neg'};
+            temp['port_keys'] = ['pos','neg'];
+            temp['value'] = {'V0': info['elements'][i]['value']['V0'],
+                             'VA': info['elements'][i]['value']['VA'],
+                             'FREQ': info['elements'][i]['value']['FREQ'],
+                             'TD': info['elements'][i]['value']['TD'],
+                             'THEAT': info['elements'][i]['value']['THEAT'],
+                             'PHASE': info['elements'][i]['value']['PHASE']
+                            }            
         }
         circuit.push(temp);
     }
@@ -473,22 +509,49 @@ function NormalizeXML(info){
         }   
     }
 
+    let count = 1 ;
+    let node_str = '';
+    let flag_gnd = false;
     for(var i=0; i<nodes.length; i++){
-        let node_str = "n" + String(i);
+        node_str =  String(count);
         for(var j=0; j<nodes[i].length; j++){
             let node_info = nodes[i][j].split(" ");
             let node_id = node_info[0];
             let node_port = node_info[1];
             let node_index = SearchID(circuit,node_id);
-            if(node_index != -1){
-                // if( node_port == 'gnd' ){
-                //     node_str = "gnd" ;
-                // }
-                circuit[node_index]['port'][node_port] = node_str;
-                if(node_port == 'source'){
-                    circuit[node_index]['port']['bulk'] = circuit[node_index]['port']['source'];
+            if(node_port == 'gnd'){
+                flag_gnd = true;
+            }
+            else{
+                if(node_index != -1){
+                    circuit[node_index]['port'][node_port] = node_str;
+
+                    if(node_port == 'source'){
+                        circuit[node_index]['port']['bulk'] = circuit[node_index]['port']['source'];
+                    }
                 }
             }
+        }
+
+        if(flag_gnd){
+            flag_gnd = false;
+            for(var j=0; j<nodes[i].length; j++){
+                let node_info = nodes[i][j].split(" ");
+                let node_id = node_info[0];
+                let node_port = node_info[1];
+                let node_index = SearchID(circuit,node_id);
+                node_str = "0";
+                if(node_index != -1){
+                    circuit[node_index]['port'][node_port] = node_str;
+
+                    if(node_port == 'source'){
+                        circuit[node_index]['port']['bulk'] = circuit[node_index]['port']['source'];
+                    }
+                }
+            }
+        }
+        else{
+            count += 1;
         }
     }
     return circuit;
@@ -520,7 +583,6 @@ function ExtractSpice(circuit){
         spice += circuit[i]['name'] + " ";
         for(var j=0; j<circuit[i]['port_keys'].length; j++){
             spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
-            // spice += circuit[i]['port_keys'][j] + " ";
         }
         spice += circuit[i]['type'] + " ";
         for(key in circuit[i]['value']){
@@ -530,8 +592,84 @@ function ExtractSpice(circuit){
     }
     return spice;
 };
+// 根据从xml提取出来的info生成spice网表
+function ExtractSpice_2(circuit){
+    let spice = "";
+    let key ;
+    for(var i=0; i<circuit.length;i++){
+        if((circuit[i]['type']=='gnd') || (circuit[i]['type']=='vdd')){
+            continue;
+        }
+        else if((circuit[i]['type']=='pin') || (circuit[i]['type']=='pout')){
+            continue;
+        }
+        else if((circuit[i]['type']=='p_mosfet') || (circuit[i]['type']=='n_mosfet')){
+            spice += circuit[i]['name'] + " ";
+            for(var j=0; j<circuit[i]['port_keys'].length; j++){
+                spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            }
+            spice += circuit[i]['type'] + " ";
+            spice += 'l=' + circuit[i]['value']['length']  + " ";
+            spice += 'w=' + circuit[i]['value']['width']   + " ";
+            spice += "\n";
+        }
+        else if(circuit[i]['type']=='vdc'){
+            spice += circuit[i]['name'] + " ";
+            for(var j=0; j<circuit[i]['port_keys'].length; j++){
+                spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            }
+            spice += 'DC' + " ";
+            spice += (circuit[i]['value']['DC'].replace(" ","")).replace("V","") + " ";
+            spice += "\n";      
+        }
+        else if(circuit[i]['type']=='vac'){
+            spice += circuit[i]['name'] + " ";
+            for(var j=0; j<circuit[i]['port_keys'].length; j++){
+                spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            }
+            spice += 'DC' + " ";
+            spice += (circuit[i]['value']['DC'].replace(" ","")).replace("V","") + " ";
+            spice += 'AC' + " ";
+            spice += (circuit[i]['value']['ACMAG'].replace(" ","")).replace("V","") + " ";
+            if(circuit[i]['value']['ACPHASE'].replace(" ","").replace("deg","") != "0"){
+                spice += circuit[i]['value']['ACPHASE'].replace(" ","").replace("deg","") + " ";
+            }
+            spice += "\n";
+        }
+        else if(circuit[i]['type']=='vsin'){
+            spice += circuit[i]['name'] + " ";
+            for(var j=0; j<circuit[i]['port_keys'].length; j++){
+                spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            }
+            spice += "SIN(" + " ";
+            spice += circuit[i]['value']['V0'].replace(" ","").replace("V","") + " ";
+            spice += circuit[i]['value']['VA'].replace(" ","").replace("V","") + " ";
+            spice += circuit[i]['value']['FREQ'].replace(" ","").replace("Hz","") + " ";
+            spice += ")";
+            spice += "\n";
+
+        }
+        else{
+            spice += circuit[i]['name'] + " ";
+            for(var j=0; j<circuit[i]['port_keys'].length; j++){
+                spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
+            }
+            spice += circuit[i]['type'] + " ";
+            for(key in circuit[i]['value']){
+                spice += circuit[i]['value'][key] + " ";
+            }
+            spice += "\n";
+        }
+    }
+    return spice;
+};
+
 
 </script>
+
+
+
+
 
 
 <script type="text/javascript">
@@ -579,9 +717,13 @@ function showProperties(graph,cell)
         }
 
         var okFunction = mxUtils.bind(this, function(){
-
+            
             cell.setValue(AssembleAttribute());
+            
+            // graph.cellLabelChanged(cell,AssembleAttribute(),false);
+
             wnd.destroy();
+            
             // cell.value = value ;
         });
 
@@ -885,7 +1027,14 @@ function showOutline(graph)
                 let spice = ExtractSpice(circuit);
                 mxUtils.popup(spice, true);
             }));
-
+			document.body.appendChild(mxUtils.button('Show Spice 2', function()
+			{
+                
+                var node = ParseSpice(graph.getModel()); 
+                var circuit = NormalizeXML(node);
+                let spice = ExtractSpice_2(circuit);
+                mxUtils.popup(spice, true);
+            }));
             // Extract SPICE model
 			document.body.appendChild(mxUtils.button('Show Info', function()
 			{
@@ -2150,14 +2299,185 @@ Adds oval markers for edge-to-edge connections.
         }
     };
 
-    mxCellRenderer.registerShape('resistor', ResistorShape);
-    mxCellRenderer.registerShape('n_mosfet', N_Mosfet_Shape);
-    mxCellRenderer.registerShape('p_mosfet', P_Mosfet_Shape);
-    mxCellRenderer.registerShape('vdd'     , Vdd_Shape);
-    mxCellRenderer.registerShape('gnd'     , Gnd_Shape);
+    function Vdc_Shape() { };
+    Vdc_Shape.prototype = new mxCylinder();
+    Vdc_Shape.prototype.constructor = Vdc_Shape;
+    Vdc_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 1/2, h * 0);
+            path.lineTo(w * 1/2, h * 1/8);
+            path.moveTo(w * 1/2, h * 1);
+            path.lineTo(w * 1/2, h * 7/8);
+            // path.moveTo(w * 1/2, h * 1/8);
+            // path.arcTo(3/8*w,3/8*w,180,true,true,w*1/2,h*1/2);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w * 7/8, h * 1/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w *  1/8, h * 1/8, 
+                        w * 1/8, h * 1/2);
+            
+            path.moveTo(w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                        w * 7/8, h * 7/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo(w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                        w *  1/8, h * 7/8, 
+                        w * 1/8, h * 1/2);
+
+            path.moveTo(w * 1/2, h * 3/16);
+            path.lineTo(w * 1/2, h * 7/16);
+            path.moveTo(w * 3/8, h * 5/16);
+            path.lineTo(w * 5/8, h * 5/16);
+            path.moveTo(w * 3/8, h * 11/16);
+            path.lineTo(w * 5/8, h * 11/16);
+
+            path.end();
+        }
+    };
+
+    function Vac_Shape() { };
+    Vac_Shape.prototype = new mxCylinder();
+    Vac_Shape.prototype.constructor = Vac_Shape;
+    Vac_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 1/2, h * 0);
+            path.lineTo(w * 1/2, h * 1/8);
+            path.moveTo(w * 1/2, h * 1);
+            path.lineTo(w * 1/2, h * 7/8);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w * 7/8, h * 1/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w *  1/8, h * 1/8, 
+                        w * 1/8, h * 1/2);
+            
+            path.moveTo(w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                        w * 7/8, h * 7/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo( w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                         w *  1/8, h * 7/8, 
+                         w * 1/8, h * 1/2);
+            // +
+            path.moveTo(w * 1/2, h * 3/16);
+            path.lineTo(w * 1/2, h * 7/16);
+            path.moveTo(w * 3/8, h * 5/16);
+            path.lineTo(w * 5/8, h * 5/16);
+            // -
+            path.moveTo(w * 3/8, h * 11/16);
+            path.lineTo(w * 5/8, h * 11/16);
+
+            // ac
+            path.moveTo( w * 2/8, h * 9/16);
+            path.curveTo(w * 2/8, h * 9/16,
+                        w * 2/8 , h * 8/16,
+                        w * 3/8, h * 8/16);
+            
+            path.moveTo( w * 3/8, h * 8/16);
+            path.curveTo(w * 3/8, h * 8/16,
+                        w * 4/8 , h * 8/16,
+                        w * 4/8 , h * 9/16);
+
+            path.moveTo( w * 4/8, h * 9/16);
+            path.curveTo(w * 4/8, h * 9/16,
+                        w * 4/8 , h * 10/16,
+                        w * 5/8 , h * 10/16);
+            
+            path.moveTo( w * 5/8, h * 10/16);
+            path.curveTo(w * 5/8, h * 10/16,
+                        w * 6/8 , h * 10/16,
+                        w * 6/8 , h * 9/16);
+
+            path.end();
+        }
+    };
+
+    function Vsin_Shape() { };
+    Vsin_Shape.prototype = new mxCylinder();
+    Vsin_Shape.prototype.constructor = Vsin_Shape;
+    Vsin_Shape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+    {
+        if (isForeground)
+        {
+            path.moveTo(w * 1/2, h * 0);
+            path.lineTo(w * 1/2, h * 1/8);
+            path.moveTo(w * 1/2, h * 1);
+            path.lineTo(w * 1/2, h * 7/8);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w * 7/8, h * 1/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo(w * 1/2, h * 1/8);
+            path.curveTo(w * 1/2, h * 1/8,
+                        w *  1/8, h * 1/8, 
+                        w * 1/8, h * 1/2);
+            
+            path.moveTo(w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                        w * 7/8, h * 7/8, 
+                        w * 7/8, h * 1/2);
+
+            path.moveTo( w * 1/2, h * 7/8);
+            path.curveTo(w * 1/2, h * 7/8,
+                         w *  1/8, h * 7/8, 
+                         w * 1/8, h * 1/2);
+
+            // ac
+            path.moveTo( w * 2/8, h * 9/16);
+            path.curveTo(w * 2/8, h * 9/16,
+                        w * 2/8 , h * 8/16,
+                        w * 3/8, h * 8/16);
+            
+            path.moveTo( w * 3/8, h * 8/16);
+            path.curveTo(w * 3/8, h * 8/16,
+                        w * 4/8 , h * 8/16,
+                        w * 4/8 , h * 9/16);
+
+            path.moveTo( w * 4/8, h * 9/16);
+            path.curveTo(w * 4/8, h * 9/16,
+                        w * 4/8 , h * 10/16,
+                        w * 5/8 , h * 10/16);
+            
+            path.moveTo( w * 5/8, h * 10/16);
+            path.curveTo(w * 5/8, h * 10/16,
+                        w * 6/8 , h * 10/16,
+                        w * 6/8 , h * 9/16);
+
+            path.end();
+        }
+    };    
+
+    mxCellRenderer.registerShape('resistor' , ResistorShape);
+    mxCellRenderer.registerShape('n_mosfet' , N_Mosfet_Shape);
+    mxCellRenderer.registerShape('p_mosfet' , P_Mosfet_Shape);
+    mxCellRenderer.registerShape('vdd'      , Vdd_Shape);
+    mxCellRenderer.registerShape('gnd'      , Gnd_Shape);
     mxCellRenderer.registerShape('capacitor', Capacitor_Shape);
-    mxCellRenderer.registerShape('pin', Pin_Shape);
-    mxCellRenderer.registerShape('pout', Pout_Shape);
+    mxCellRenderer.registerShape('pin'      , Pin_Shape);
+    mxCellRenderer.registerShape('pout'     , Pout_Shape);
+    mxCellRenderer.registerShape('vdc'      , Vdc_Shape);
+    mxCellRenderer.registerShape('vac'      , Vac_Shape);
+    mxCellRenderer.registerShape('vsin'     , Vsin_Shape);
+    
 </script>
 
 <!-- 进行端口限制 -->
@@ -2199,7 +2519,7 @@ Adds oval markers for edge-to-edge connections.
         return ports2;
     };
 
-    // ... except for n mosfet
+    //  for n mosfet
     var ports_resistor = new Array();
     ports_resistor['pos'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
     ports_resistor['neg'] = {x: 1, y: 0.5, perimeter: true, constraint: 'east'};
@@ -2209,7 +2529,7 @@ Adds oval markers for edge-to-edge connections.
         return ports_resistor;
     };
 
-    // ... except for n mosfet
+    //  for n mosfet
     var ports_nmosfet = new Array();
     ports_nmosfet['gate'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
     ports_nmosfet['drain'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
@@ -2218,7 +2538,7 @@ Adds oval markers for edge-to-edge connections.
     N_Mosfet_Shape.prototype.getPorts = function(){
         return ports_nmosfet;
     };
-    // ... except for p mosfet
+    //  for p mosfet
     var ports_pmosfet = new Array();
     ports_pmosfet['gate'] = {x: 0, y: 0.5, perimeter: true, constraint: 'west'};
     ports_pmosfet['source'] = {x: 1, y: 0.25, perimeter: true, constraint: 'east'};
@@ -2227,14 +2547,14 @@ Adds oval markers for edge-to-edge connections.
     P_Mosfet_Shape.prototype.getPorts = function(){
         return ports_pmosfet;
     };  
-    // ... except for vdd
+    //  for vdd
     var ports_vdd = new Array();
     ports_vdd['vdd'] = {x: 0.5, y: 1, perimeter: true, constraint: 'south'};
 
     Vdd_Shape.prototype.getPorts = function(){
         return ports_vdd;
     };
-    // ... except for gnd
+    // for gnd
     var ports_gnd = new Array();
     ports_gnd['gnd'] = {x: 0.5, y: 0, perimeter: true, constraint: 'north'};
 
@@ -2242,7 +2562,7 @@ Adds oval markers for edge-to-edge connections.
         return ports_gnd;  
     };
 
-    // ... except for capatiance
+    //  for capatiance
     var ports_capatiance = new Array();
     ports_capatiance['pos'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
     ports_capatiance['neg'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
@@ -2251,20 +2571,48 @@ Adds oval markers for edge-to-edge connections.
         return ports_capatiance;  
     };
 
-    // ... except for capatiance
+    //  for port_pin
     var ports_pin = new Array();
     ports_pin['pin'] = {x: 1.0, y: 0.5, perimeter: true, constraint: 'east'};
 
     Pin_Shape.prototype.getPorts = function(){
         return ports_pin;  
     };
-    // ... except for capatiance
+    //  for port_out
     var ports_pout = new Array();
     ports_pout['pout'] = {x: 0.0, y: 0.5, perimeter: true, constraint: 'west'};
 
     Pout_Shape.prototype.getPorts = function(){
         return ports_pout;  
     };
+    //  for Vdc
+    var ports_vdc = new Array();
+    ports_vdc['pos'] = {x: 0.5, y: 0.0, perimeter: true, constraint: 'north'};
+    ports_vdc['neg'] = {x: 0.5, y: 1.0, perimeter: true, constraint: 'south'};
+
+    Vdc_Shape.prototype.getPorts = function(){
+        return ports_vdc;  
+    };    
+    //  for Vac
+    var ports_vac = new Array();
+    ports_vac['pos'] = {x: 0.5, y: 0.0, perimeter: true, constraint: 'north'};
+    ports_vac['neg'] = {x: 0.5, y: 1.0, perimeter: true, constraint: 'south'};
+
+    Vac_Shape.prototype.getPorts = function(){
+        return ports_vac;  
+    };    
+
+    //  for Vsin
+    var ports_vsin = new Array();
+    ports_vsin['pos'] = {x: 0.5, y: 0.0, perimeter: true, constraint: 'north'};
+    ports_vsin['neg'] = {x: 0.5, y: 1.0, perimeter: true, constraint: 'south'};
+
+    Vsin_Shape.prototype.getPorts = function(){
+        return ports_vsin;  
+    };
+
+
+    
 </script>
 
 
