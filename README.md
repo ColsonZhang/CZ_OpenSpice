@@ -11,21 +11,25 @@
 
 ## 项目框架
 
-### Schematic
-
-能够绘制电路原理图的web前端代码，主要采用mxGraph代码构建。
-
-#### 运行方法
-
-进入`./Schematic`路径下
-
-执行`python server.py`
-
-在浏览器中打开`localhost:8000`进入文件服务器，在文件服务器中打开`./template/schematic.html`文件即可
-
-### Server
-
 整个项目的后端服务器代码，主要基于Tornado、Bokeh框架开发。
+
+```
++doc           ----项目日志文件
++handler       ----项目服务器python文件
++spice         ----spice仿真测试文件
++static        ----静态文件
+...+login          ----登录界面网页资源
+...+register       ----注册界面网页资源
+...+schematic      ----前端绘制电路图界面网页资源
++template      ----网页模板
+...+auth           ----登录、注册界面网页
+...+schematic      ----绘制电路图界面网页
+...+spice          ----spice测试界面网页
+...index.html      ----网站主页面网页
+requirements   ----环境需求
+README.md      ----用户须知
+app.py         ----服务器的主程序
+```
 
 ## 环境配置
 
@@ -55,24 +59,30 @@
 
 ## 更新日志
 
+* 2021年2月8号，前端更新，后端更新
+
+  * 优化了mos器件的描述方法
+  * 增加了电源模型
+  * 增加全局Vdd同步属性
+  * 将前端schematic和后端server进行结合，成功将spice网表发送到后端服务器，并存储到数据库中
 * 2021年2月8号，前端更新
 
   * 优化了schematic电路图提取spice网表功能
   * 新增加了多种电源器件
   * 初步实验了将提取出来的spice网表送进spice仿真器中执行仿真的结果
-  * ![avatar](./Schematic/schematic4.png)
+  * ![avatar](./doc/schematic4.png)
 * 2021年2月2日，前端更新
 
   * 增加电路spice网表提取功能
   * 但是spice网表的具体格式仍存在一些小问题，需要与spice语法规则做进一步的校准
   * 另外，元件的名称需要增加自动调整功能，来保证所有元件名称的唯一性
-  * ![avatar](./Schematic/schematic3.png)
+  * ![avatar](./doc/schematic3.png)
 * 2021年2月1日，前端更新
 
   * 发现bug，拖拽元件时，发现连线无法跟着移动
   * 增加了对xml格式文件的电路解析info
   * 将电路具体的解析info转换为spice网表电路功能待开发
-  * ![avatar](./Schematic/schematic2.png)
+  * ![avatar](./doc/schematic2.png)
 * 2021年1月31日，前端更新
 
   * 增加了元件属性修改功能，增加了对属性的解析
@@ -80,7 +90,7 @@
   * 增加了按下delete键删除元素的功能
   * 发现了一些bug，例如当进行FlipH和FlipV时端口无法跟着进行翻转
   * 当前的功能界面如下图所示
-  * ![avatar](./Schematic/schematic.png)
+  * ![avatar](./doc/schematic.png)
 * 2021年1月28日，前端更新
 
   * 增加了一些功能控件，完成基本雏形
