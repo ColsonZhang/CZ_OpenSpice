@@ -45,9 +45,9 @@ app.py         ----服务器的主程序
 
 ### 数据库
 
-需要安装如下几个数据库，并进行配置，配置的信息在`./Server/handler/MongoDB.py`和
+需要安装如下几个数据库，并进行配置，配置的信息在`./handler/MongoDB.py`和
 
-`./Server/handler/MysqlDB.py`中均有记录
+`./handler/MysqlDB.py`中均有记录
 
 * `redis`
 * `mysql`
@@ -55,7 +55,7 @@ app.py         ----服务器的主程序
 
 ## 项目启动
 
-进入`./Server/`路径，执行`python app.py`
+进入项目路径，执行`python app.py`
 
 ## 更新日志
 
