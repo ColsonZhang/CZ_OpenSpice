@@ -15,12 +15,16 @@
 	<!-- Loads and initializes the library -->
 	<script type="text/javascript" src="static/schematic/src/js/mxClient.js"></script>
     
+    <link href="static/schematic/css/tab.css" rel="stylesheet" type="text/css"/>
+
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.2.3.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.2.3.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.3.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.2.3.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.2.3.min.js"></script>
     <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
 
 	<!-- Example code -->
 	<script type="text/javascript">
@@ -718,6 +722,17 @@ function ExtractSpice_2(circuit){
     return spice;
 };
 
+
+function get_spice(graph){
+
+    var node = ParseSpice(graph.getModel()); 
+    var circuit = NormalizeXML(node);
+    let spice = ExtractSpice_2(circuit);
+    return spice;
+
+};
+
+
 </script>
 
 
@@ -1119,7 +1134,106 @@ function showOutline(graph)
 
             }));
 
-			document.body.appendChild(mxUtils.button('wnd test', function()
+            document.body.appendChild(mxUtils.button('simulator', function(){
+
+                // let spice = get_spice(graph);
+                
+                var frame = document.createElement('div');
+                frame.setAttribute('id','bokeh_02');
+
+                var div_tab = document.createElement('div');
+                div_tab.setAttribute('class','tab');
+
+                let sim_mode = ['transient', 'dc', 'ac'];
+                
+                let sim_mode_content = {
+                    'transient': {
+                        "key"   :[ 'step_time', 'end_time', 'start_time','max_time','use_initial_condition'],
+                        "value" :[ '', '', '0', 'None', 'False']
+                        },
+                    'dc': {
+                        "key"   :[ "src","start","stop","step"],
+                        "value" :[ "","","",""]
+                        },
+                    'ac': {
+                        "key"   :[ "variation", "number_of_points", "start_frequency", "stop_frequency"],
+                        "value" :[ "","","",""]
+                        }
+                };
+                
+                for(var i=0; i<sim_mode.length; i++){
+                    var div_mode =  document.createElement('button');
+                    div_mode.setAttribute('class',"tablinks");
+                    div_mode.setAttribute('onclick',"openMode(event, '"+ sim_mode[i] +"')");
+
+                    div_mode.innerHTML = sim_mode[i] ;
+                    div_tab.appendChild(div_mode);
+                }
+
+                frame.appendChild(div_tab);
+
+                for(var i=0; i<sim_mode.length; i++){
+                    var div_mode =  document.createElement('div');
+                    div_mode.setAttribute('class',"tabcontent");
+                    div_mode.setAttribute('id',sim_mode[i]);
+
+                    var div_h3 = document.createElement('h3');
+                    div_h3.innerHTML = sim_mode[i];
+                    div_mode.appendChild(div_h3);
+
+                    var table = document.createElement('table');
+
+                    var the_mode = sim_mode_content[sim_mode[i]];
+                    for(var j=0; j<the_mode['key'].length; j++ ){
+                        var form_div = document.createElement('tr');
+
+                        var td_name = document.createElement('td');
+                        td_name.innerHTML = the_mode['key'][j] ;
+                        form_div.appendChild(td_name);
+
+                        var td_input = document.createElement('td');
+
+                        var input = document.createElement('input');
+                        input.setAttribute('name', the_mode['key'][j]);
+                        input.setAttribute("class","simulator_input")
+                        input.setAttribute('type', "text");
+                        input.setAttribute('value', the_mode['value'][j] );
+                        td_input.appendChild(input);
+
+                        form_div .appendChild(td_input);
+
+                        table.appendChild(form_div);
+                    }
+                    var confirm = document.createElement('button');
+                    confirm.setAttribute("type","submit");
+                    confirm.setAttribute('onclick',"Simulation('"+sim_mode[i] +"')");
+                    confirm.innerHTML = "Confirm";
+
+                    table.appendChild(confirm);
+
+                    div_mode.appendChild(table);
+
+                    frame.appendChild(div_mode);                    
+                }
+                
+                var x = document.createElement('script');
+                x.setAttribute('src','static/spice/bokeh_02.js');
+
+                frame.appendChild(x);
+
+                var w = document.body.clientWidth;
+                var h = (document.body.clientHeight || document.documentElement.clientHeight);
+                var wnd = new mxWindow('Title', frame, (w-200)/2, (h-200)/3, 400, 400, true, true);
+
+                wnd.setVisible(true);
+                wnd.setScrollable(true);
+                wnd.setResizable(true);
+                wnd.setVisible(true);
+                wnd.setClosable(true); 
+
+            }));
+
+			document.body.appendChild(mxUtils.button('show result', function()
 			{
 
                 var frame = document.createElement('div');
@@ -1142,80 +1256,7 @@ function showOutline(graph)
 
             }));
 
-			// Shows XML for debugging the actual model
-			// document.body.appendChild(mxUtils.button('Show XML', function()
-			// {
-            //     var encoder = new mxCodec();
-            //     var node = encoder.encode(graph.getModel());
-            //     mxUtils.popup(mxUtils.getPrettyXml(node), true);
-            // }));
 
-            // // Extract SPICE model
-			// document.body.appendChild(mxUtils.button('Show Info', function()
-			// {
-            //     let content = '';
-            //     var node = ParseSpice(graph.getModel()); 
-            //     for(var i=0; i<node['elements'].length; i++){
-            //         content += "id " + node['elements'][i]['id'] + '\t';
-            //         content += "Name " + node['elements'][i]['value']['Name'] + '\t';
-            //         content += "shape " + node['elements'][i]['style']['shape'] + '\t';
-            //         if("Value" in node['elements'][i]['value']){
-            //             content += "Value " + node['elements'][i]['value']['Value'] + '\t';
-            //         }
-            //         if("Length" in node['elements'][i]['value']){
-            //             content += "Length " + node['elements'][i]['value']['Length'] + '\t';
-            //         }
-            //         if("Width" in node['elements'][i]['value']){
-            //             content += "Width " + node['elements'][i]['value']['Width'] + '\t';
-            //         }
-            //         content += "\n" ;
-            //     };
-
-            //     for(var i=0; i<node['wires'].length; i++){
-            //         content += "id " + node['wires'][i]['id'] + '\t';
-            //         content += "source " + node['wires'][i]['source'] + '\t';
-            //         content += "sourcePort " + node['wires'][i]['style']['sourcePort'] +'\t';
-            //         content += "target " + node['wires'][i]['target'] + '\t';
-            //         content += "targetPort " ;
-            //         if("targetPort" in node['wires'][i]['style']){
-            //             content += node['wires'][i]['style']['targetPort'] + '\n';
-            //         }
-            //         else{
-            //             content += "null" +'\n';
-            //         }
-            //     };
-
-            //     mxUtils.popup(content, true);
-            // }));     
-
-
-			// document.body.appendChild(mxUtils.button('Create toolbar entry from selection', function()
-			// {
-            //     if (!graph.isSelectionEmpty())
-			// 		{
-			// 			// Creates a copy of the selection array to preserve its state
-			// 			var cells = graph.getSelectionCells();
-			// 			var bounds = graph.getView().getBounds(cells);
-						
-			// 			// Function that is executed when the image is dropped on
-			// 			// the graph. The cell argument points to the cell under
-			// 			// the mousepointer if there is one.
-			// 			var funct = function(graph, evt, cell)
-			// 			{
-			// 				graph.stopEditing(false);
-			
-			// 				var pt = graph.getPointForEvent(evt);
-			// 				var dx = pt.x - bounds.x;
-			// 				var dy = pt.y - bounds.y;
-							
-			// 				graph.setSelectionCells(graph.importCells(cells, dx, dy, cell));
-			// 			}
-			
-			// 			// Creates the image which is used as the drag icon (preview)
-			// 			var img = toolbar.addMode(null, 'editors/images/outline.gif', funct);
-			// 			mxUtils.makeDraggable(img, graph, funct);
-			// 		}
-			// }));
 
 			// Wire-mode
 			var checkbox = document.createElement('input');

@@ -59,6 +59,12 @@ app.py         ----服务器的主程序
 
 ## 更新日志
 
+* 2021年2月9号，前端更新
+
+  * 发现bug: 当schematic中没有组件时，spice的parse函数抛出错误
+  * 待解决：如何将spice网表和simulation同时传入服务器
+  * 新增：仿真的参数设置
+  * ![avatar](./doc/schematic6.png)
 * 2021年2月8号，前端更新
 
   * 新增在弹出窗口里嵌入bokehjs代码的功能
