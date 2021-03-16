@@ -13,13 +13,22 @@ class SpiceHandler(AuthBaseHandler):
         username = self.get_current_user()
         message = self.get_argument('spice')
 
-        print('SpiceHandler: '+username+'   '+message)
+        print('SpiceHandler: '+username+' \n'+message)
         Mongo.connect(DataBase='example',Collection=username)
         Mongo.update(behavior=message,tags='spice')
 
         self.write("success")
 
+class SimulationHandler(AuthBaseHandler):
+    @tornado.web.authenticated
+    def post(self,*args,**kwargs):
+        sim_type = self.get_argument('sim_type')
+        properties = self.get_argument('properties')
 
+        print("sim type:",sim_type)
+        print("property:",properties)
+
+        self.write("success")
 
 
 class Schematic_Handler(AuthBaseHandler):

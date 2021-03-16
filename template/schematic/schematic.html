@@ -732,6 +732,27 @@ function get_spice(graph){
 
 };
 
+</script>
+
+
+<!-- Simulator 窗口模式选择 -->
+<script> 
+
+function openMode(evt, tabMode) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabMode).style.display = "block";
+  evt.currentTarget.className += " active";
+
+};
+
 
 </script>
 
@@ -751,6 +772,50 @@ function ajax_message(data) {
         }
     });
 }
+
+// 由于ajax传递参数时，无法直接进行List的传递，故将属性List转换为了string然后进行传递
+function Simulator(sim_type){
+
+    // var properties = [];
+    var properties_send = "";
+    var sel = $("#"+sim_type+" input");
+
+    // alert(sim_type);
+
+    sel.each(function(){
+    var new_element = {};
+    var n = $(this)[0].name;
+    var v = $(this)[0].value;
+
+    properties_send  += n + "=" + v + ";"; 
+    // new_element[n] = v ;
+    // properties.push(new_element);
+    });
+
+    
+    var data = new Object();
+    data["sim_type"] = sim_type;
+    data["properties"] = properties_send;
+    // data['spice'] = spice;
+    // alert(spice);
+
+    // for(var i=0; i<properties.length; i++){
+    //   var key = Object.keys(properties[i])[0];
+    //   var val = Object.values(properties[i])[0];
+    //   alert(key + " "+ val);
+    // }
+
+    $.ajax({
+        type: 'POST',
+        url: "/simulation",
+        data: data,
+        success: function (response) {
+            alert(response);
+        }
+    });
+
+};
+
 
 </script>
 
@@ -831,8 +896,6 @@ function showProperties(graph,cell)
 
 	}
 };
-
-
 
 </script>
 
@@ -1141,15 +1204,20 @@ function showOutline(graph)
                 var frame = document.createElement('div');
                 frame.setAttribute('id','bokeh_02');
 
+                // var x = document.createElement('script');
+                // x.setAttribute('src','static/spice/bokeh_02.js');
+                // frame.appendChild(x);
+
                 var div_tab = document.createElement('div');
                 div_tab.setAttribute('class','tab');
 
-                let sim_mode = ['transient', 'dc', 'ac'];
+
+                var sim_mode = ['transient', 'dc', 'ac'];
                 
-                let sim_mode_content = {
+                var sim_mode_content = {
                     'transient': {
                         "key"   :[ 'step_time', 'end_time', 'start_time','max_time','use_initial_condition'],
-                        "value" :[ '', '', '0', 'None', 'False']
+                        "value" :[ '0.1 us', '20 us', '0', 'None', 'False']
                         },
                     'dc': {
                         "key"   :[ "src","start","stop","step"],
@@ -1200,13 +1268,15 @@ function showOutline(graph)
                         input.setAttribute('value', the_mode['value'][j] );
                         td_input.appendChild(input);
 
-                        form_div .appendChild(td_input);
+                        form_div.appendChild(td_input);
 
                         table.appendChild(form_div);
                     }
+
                     var confirm = document.createElement('button');
                     confirm.setAttribute("type","submit");
-                    confirm.setAttribute('onclick',"Simulation('"+sim_mode[i] +"')");
+                    confirm.setAttribute('onclick',"Simulator('"+sim_mode[i] +"')");
+                    // confirm.onclick = function(){    Simulator(sim_mode[i]); };
                     confirm.innerHTML = "Confirm";
 
                     table.appendChild(confirm);
@@ -1214,12 +1284,9 @@ function showOutline(graph)
                     div_mode.appendChild(table);
 
                     frame.appendChild(div_mode);                    
-                }
+                };
                 
-                var x = document.createElement('script');
-                x.setAttribute('src','static/spice/bokeh_02.js');
 
-                frame.appendChild(x);
 
                 var w = document.body.clientWidth;
                 var h = (document.body.clientHeight || document.documentElement.clientHeight);

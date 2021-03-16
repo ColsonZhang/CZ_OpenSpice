@@ -19,6 +19,8 @@ function Simulation(sim_type){
   var properties = [];
   var sel = $("#"+sim_type+" input");
 
+  alert(sim_type);
+
   sel.each(function(){
     var new_element = {};
     var n = $(this)[0].name;
@@ -29,7 +31,7 @@ function Simulation(sim_type){
 
 
   var data = new Object();
-  data["type"] = sim_type;
+  data["sim_type"] = sim_type;
   data["properties"] = properties;
   // data['spice'] = spice;
   // alert(spice);
@@ -40,13 +42,15 @@ function Simulation(sim_type){
   //   alert(key + " "+ val);
   // }
 
-  // $.ajax({
-  //     type: 'POST',
-  //     url: "/simulation",
-  //     data: data,
-  //     success: function (response) {
-  //         alert(response);
-  //     }
-  // });
+  $.ajax({
+      type: 'POST',
+      url: "/simulation",
+      data: data,
+      success: function (response) {
+          alert(response);
+      }
+  });
 
-}
+};
+
+
