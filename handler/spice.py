@@ -2,6 +2,7 @@ from .main import AuthBaseHandler
 from .js import js_import, js_code_1
 import tornado.web
 from .MongoDB import *
+from .simulation import Simulator_CZ
 # from bokeh.embed import server_document
 # from jinja2 import Environment, FileSystemLoader
 
@@ -23,12 +24,33 @@ class SimulationHandler(AuthBaseHandler):
     @tornado.web.authenticated
     def post(self,*args,**kwargs):
         sim_type = self.get_argument('sim_type')
-        properties = self.get_argument('properties')
+        properties_str = self.get_argument('properties')
+        spice = self.get_argument('spice')
+
+        properties = properties_transform(properties_str)
 
         print("sim type:",sim_type)
-        print("property:",properties)
+        print("property:",properties_str)
+        print("spice   :",spice)
+
+        # simulator = Simulator_CZ()
+        # simulator.Get_Spice(spice)
+
 
         self.write("success")
+
+
+
+def properties_transform(properties_str):
+    properties = {}
+    attributes = properties_str.split(";")
+    # print(attributes)
+    for attr in attributes:
+        if(attr != ''):
+            term = attr.split("=")
+            properties[term[0]] = term[1]
+    return properties 
+
 
 
 class Schematic_Handler(AuthBaseHandler):

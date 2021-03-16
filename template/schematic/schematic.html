@@ -774,7 +774,7 @@ function ajax_message(data) {
 }
 
 // 由于ajax传递参数时，无法直接进行List的传递，故将属性List转换为了string然后进行传递
-function Simulator(sim_type){
+function Simulator(sim_type, spice){
 
     // var properties = [];
     var properties_send = "";
@@ -796,7 +796,7 @@ function Simulator(sim_type){
     var data = new Object();
     data["sim_type"] = sim_type;
     data["properties"] = properties_send;
-    // data['spice'] = spice;
+    data['spice'] = spice;
     // alert(spice);
 
     // for(var i=0; i<properties.length; i++){
@@ -1181,7 +1181,7 @@ function showOutline(graph)
 			{
                 var node = ParseSpice(graph.getModel()); 
                 var circuit = NormalizeXML(node);
-                let spice = ExtractSpice_2(circuit);
+                let spice = ExtractSpice_2(circuit);                                                            
 
                 var data = new Object();
                 data["name"] = "Spice";
@@ -1263,7 +1263,7 @@ function showOutline(graph)
 
                         var input = document.createElement('input');
                         input.setAttribute('name', the_mode['key'][j]);
-                        input.setAttribute("class","simulator_input")
+                        input.setAttribute("class","simulator_input");
                         input.setAttribute('type', "text");
                         input.setAttribute('value', the_mode['value'][j] );
                         td_input.appendChild(input);
@@ -1275,8 +1275,12 @@ function showOutline(graph)
 
                     var confirm = document.createElement('button');
                     confirm.setAttribute("type","submit");
-                    confirm.setAttribute('onclick',"Simulator('"+sim_mode[i] +"')");
-                    // confirm.onclick = function(){    Simulator(sim_mode[i]); };
+                    confirm.setAttribute("class",sim_mode[i]);
+                    // confirm.setAttribute('onclick',"Simulator('"+sim_mode[i] +"'; ");
+                    confirm.onclick = function(){ 
+                        let spice = get_spice(graph);
+                        Simulator(this.className,spice);
+                    };
                     confirm.innerHTML = "Confirm";
 
                     table.appendChild(confirm);

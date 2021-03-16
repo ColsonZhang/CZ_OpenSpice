@@ -46,4 +46,8 @@ class Simulator_CZ :
         if(sim_type == 'transient'):
             parameter["step_time"] = 0
         pass 
+    
+    def unit_transform(value_raw):
+        pass
+
 
