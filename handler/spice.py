@@ -29,16 +29,17 @@ class SimulationHandler(AuthBaseHandler):
 
         properties = properties_transform(properties_str)
 
-        print("sim type:",sim_type)
-        print("property:",properties_str)
-        print("spice   :",spice)
+        # print("sim type:",sim_type)
+        # print("property:",properties_str)
+        # print("spice   :\n",spice)
 
-        # simulator = Simulator_CZ()
-        # simulator.Get_Spice(spice)
+        simulator = Simulator_CZ()
+        simulator.Get_Spice(spice)
+        analysis = simulator.Sim(sim_type,properties)
 
+        print('simulation finished !')
 
         self.write("success")
-
 
 
 def properties_transform(properties_str):
