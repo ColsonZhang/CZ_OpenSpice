@@ -3,9 +3,11 @@ from .js import js_import, js_code_1
 import tornado.web
 from .MongoDB import *
 from .simulation import Simulator_CZ
+from .sim_data_container import Sim_Data_Container
 # from bokeh.embed import server_document
 # from jinja2 import Environment, FileSystemLoader
 
+Container_SimResult = Sim_Data_Container()
 
 class SpiceHandler(AuthBaseHandler):
     
