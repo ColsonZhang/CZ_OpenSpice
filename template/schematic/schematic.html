@@ -687,7 +687,7 @@ function ExtractSpice_2(circuit){
             for(var j=0; j<circuit[i]['port_keys'].length; j++){
                 spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
             }
-            spice += "PULSE(" + " ";
+            spice += "SIN(" + " ";
             spice += circuit[i]['value']['V0'].replace(" ","").replace("V","") + " ";
             spice += circuit[i]['value']['VA'].replace(" ","").replace("V","") + " ";
             spice += circuit[i]['value']['FREQ'].replace(" ","").replace("Hz","") + " ";
@@ -1311,7 +1311,7 @@ function showOutline(graph)
                 frame.setAttribute('id','bokeh_01');
 
                 var x = document.createElement('script');
-                x.setAttribute('src','static/spice/bokeh_01.js');
+                x.setAttribute('src','static/spice/show_result.js');
 
                 frame.appendChild(x);
 

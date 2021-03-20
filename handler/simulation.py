@@ -30,7 +30,7 @@ class Simulator_CZ :
     def Sim(self, sim_type,properties):
 
         parameter = self.Properties_Parse(sim_type,properties)
-        print("parameter:\n",parameter)
+        # print("parameter:\n",parameter)
         self.simulator = self.circuit.simulator(temperature=25, nominal_temperature=25)
         # print('simulator:\n',self.simulator)
         if(sim_type == 'transient'):
@@ -39,7 +39,7 @@ class Simulator_CZ :
                                                      start_time = parameter['start_time'],
                                                      max_time = parameter['max_time'], 
                                                      use_initial_condition = parameter['use_initial_condition'])
-            print(self.analysis)
+            # print(self.analysis)
             return self.analysis
         elif(sim_type == 'dc' ):
             pass

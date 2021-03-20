@@ -24,6 +24,7 @@ class Application(tornado.web.Application):  #引入Application类，重写方�
             (r'/test',main.TestHandler),
             (r'/spice',spice.SpiceHandler),
             (r'/simulation',spice.SimulationHandler),
+            (r'/getsiminfo',spice.SimulationInfoRequest_Handler),
         ]
         settings = dict(
             debug = False, #调试模式，修改后自动重启服务，不需要自动重启，生产情况下切勿开启，安全性

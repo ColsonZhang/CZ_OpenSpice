@@ -4,6 +4,10 @@ import tornado.web
 from .MongoDB import *
 from .simulation import Simulator_CZ
 from .sim_data_container import Sim_Data_Container
+from tornado.escape import json_decode, json_encode, utf8
+import json
+
+
 # from bokeh.embed import server_document
 # from jinja2 import Environment, FileSystemLoader
 
@@ -22,7 +26,9 @@ class SpiceHandler(AuthBaseHandler):
 
         self.write("success")
 
+
 class SimulationHandler(AuthBaseHandler):
+
     @tornado.web.authenticated
     def post(self,*args,**kwargs):
         sim_type = self.get_argument('sim_type')
@@ -38,12 +44,16 @@ class SimulationHandler(AuthBaseHandler):
         simulator = Simulator_CZ()
         simulator.Get_Spice(spice)
         analysis = simulator.Sim(sim_type,properties)
+        print('simulation finished !')         
 
-        print('simulation finished !')
+        Container_SimResult.load_analysis(sim_type,analysis)
+        print('data container load data successfully!! ')
 
         self.write("success")
 
 
+# 将properties 从字符串类型解析出来
+# todo: 转换为json解析
 def properties_transform(properties_str):
     properties = {}
     attributes = properties_str.split(";")
@@ -53,6 +63,20 @@ def properties_transform(properties_str):
             term = attr.split("=")
             properties[term[0]] = term[1]
     return properties 
+
+
+class SimulationInfoRequest_Handler(AuthBaseHandler):
+    @tornado.web.authenticated
+    def post(self,*args,**kwargs):
+        sim_type = self.get_argument('sim_type')
+
+        sim_info = Container_SimResult.simulation_info_request(sim_type)
+        # sim_info = {'ab':1,'cd':2,'ef':'d2','hello':[1,2,3,4,5]}
+        sim_info_json = json.dumps( sim_info )
+        # print('json transform ok !!')
+        self.write( sim_info_json )
+        # self.write(json_decode(sim_info))
+        # self.write("successful")
 
 
 
