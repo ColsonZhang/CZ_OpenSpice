@@ -30,7 +30,7 @@ class Simulator_CZ :
     def Sim(self, sim_type,properties):
 
         parameter = self.Properties_Parse(sim_type,properties)
-        # print("parameter:\n",parameter)
+        print("parameter:\n",parameter)
         self.simulator = self.circuit.simulator(temperature=25, nominal_temperature=25)
         # print('simulator:\n',self.simulator)
         if(sim_type == 'transient'):
@@ -39,10 +39,22 @@ class Simulator_CZ :
                                                      start_time = parameter['start_time'],
                                                      max_time = parameter['max_time'], 
                                                      use_initial_condition = parameter['use_initial_condition'])
-            # print(self.analysis)
             return self.analysis
         elif(sim_type == 'dc' ):
-            pass
+            print("doing the dc simulation !!!")
+            src_name = parameter['src_name']
+            vstart = parameter['start']
+            vstop = parameter['stop']
+            vstep = parameter['step']
+            the_args = "{} = slice({},{},{})".format(src_name, vstart, vstop, vstep)
+
+            exec("self.analysis = self.simulator.dc( {} )".format(the_args))
+
+            print("dc simulation finished !!!")
+            # print(self.analysis)
+            
+            return self.analysis
+
         elif(sim_type == 'ac' ):
             pass
         else:
@@ -60,7 +72,11 @@ class Simulator_CZ :
             parameter["use_initial_condition"] = self.unit_tran(properties["use_initial_condition"])
 
         elif(sim_type == 'dc' ):
-            pass
+            parameter["src_name"]   = properties["src"]
+            parameter["start"]      = properties["start"]
+            parameter["stop"]      = properties["stop"]
+            parameter["step"]      = properties["step"]
+
         elif(sim_type == 'ac' ):
             pass
 
@@ -109,13 +125,13 @@ class Simulator_CZ :
                 else:
                     the_num = float(0)     
                 return u_us(the_num)      
-         # 无单位时的情况
+        # 无单位时的情况
         else:  
             if(unit_num != []):
                 the_num = float(unit_num[0])
             else:
                 the_num = float(0)            
             return the_num
-        pass
+        
 
 
