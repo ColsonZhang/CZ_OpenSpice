@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class Sim_Data_Container :
     def __init__(self):
@@ -15,7 +15,7 @@ class Sim_Data_Container :
         elif(simtype == 'dc'):
             self.parse_dc(analysis)
         elif(simtype == 'ac'):
-            pass
+            self.parse_ac(analysis)
             
 
     
@@ -46,7 +46,7 @@ class Sim_Data_Container :
         result_dc = {}
         result_dc['sweep'] = [float(i) for i in analysis.sweep]
         result_dc['nodes_name'] = list(analysis.nodes.keys())
-        nodes = {}
+
         nodes = {}
         for i in result_dc['nodes_name'] :
             nodes[i] = [float(j) for j in analysis.nodes[i]]
@@ -59,6 +59,41 @@ class Sim_Data_Container :
         result_dc['branches'] = branches
 
         self.result['dc'] = result_dc
+
+
+    def parse_ac(self, analysis):
+        result_ac = {}
+        result_ac['frequency'] = [float(i) for i in analysis.frequency]
+        result_ac['nodes_name'] = list(analysis.nodes.keys())
+
+        nodes_gain = {}
+        nodes_phase = {}
+        for i in result_ac['nodes_name'] :
+            the_gain = 20*np.log10(np.absolute(analysis.nodes[i]))
+            the_phase = np.angle(analysis.nodes[i], deg=False)
+            # print(the_gain)
+            nodes_gain[i] = [float(j) for j in the_gain]
+            nodes_phase[i] = [float(j) for j in the_phase]
+
+        result_ac['nodes_gain'] = nodes_gain
+        result_ac['nodes_phase'] = nodes_phase
+        # print(nodes_gain)
+        # print(nodes_phase)
+
+        result_ac['branches_name'] = list(analysis.branches.keys())
+        branches_gain = {}
+        branches_phase = {}
+        for i in result_ac['branches_name']:
+            the_gain = 20*np.log10(np.absolute(analysis.branches[i]))
+            the_phase = np.angle(analysis.branches[i], deg=False)
+            branches_gain[i] = [float(j) for j in the_gain]
+            branches_phase[i] = [float(j) for j in the_phase]            
+        result_ac['branches_gain'] = branches_gain
+        result_ac['branches_phase'] = branches_phase
+
+
+        self.result['ac'] = result_ac
+
 
     def simulation_info_request(self, simtype):
         return self.result[simtype]

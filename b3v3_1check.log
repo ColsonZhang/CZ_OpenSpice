@@ -1,3 +1,3 @@
 BSIM3V3.1 Parameter Check
-Model = cmosp_180nm
+Model = cmosn_180nm
 W = 2e-05, L = 1e-06

@@ -198,15 +198,15 @@
 					addToolbarItem(graph, toolbar, vertex, icon);
                 };	
 
-                addVertex_2('static/schematic/icon_ee/res.ico', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom','Name=R;Value=10 Ohm;');
-                addVertex_2('static/schematic/icon_ee/cap.ico', 40, 30, 'shape=capacitor;verticalLabelPosition=top;verticalAlign=bottom','Name=C;Value=10 pF;');
+                addVertex_2('static/schematic/icon_ee/res.ico', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom','Name=R;Value=10Ohm;');
+                addVertex_2('static/schematic/icon_ee/cap.ico', 40, 30, 'shape=capacitor;verticalLabelPosition=top;verticalAlign=bottom','Name=C;Value=10pF;');
                 addVertex_2('static/schematic/icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_NMOS;Model=NMOS;Length=1um;Width=20um;');
                 addVertex_2('static/schematic/icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_PMOS;Model=PMOS;Length=1um;Width=20um;');
                 addVertex_2('static/schematic/icon_ee/vdd.ico', 40, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom','Name=Vdd;');
                 addVertex_2('static/schematic/icon_ee/gnd.ico', 40, 40, 'shape=gnd;verticalLabelPosition=bottom;verticalAlign=top','Name=Gnd;');
                 addVertex_2('static/schematic/icon_ee/pin.ico', 40, 40, 'shape=pin;verticalLabelPosition=top;verticalAlign=bottom','Name=Pin;');
                 addVertex_2('static/schematic/icon_ee/pout.ico', 40, 40, 'shape=pout;verticalLabelPosition=top;verticalAlign=bottom','Name=Pout;');
-                addVertex_2('static/schematic/icon_ee/vdc.ico', 40, 40, 'shape=vdc;labelPosition=left;align=right','Name=Vdc;DC=1  V;');
+                addVertex_2('static/schematic/icon_ee/vdc.ico', 40, 40, 'shape=vdc;labelPosition=left;align=right','Name=Vdc;DC=1 V;');
                 addVertex_2('static/schematic/icon_ee/vac.ico', 40, 40, 'shape=vac;labelPosition=left;align=right','Name=Vac;DC=0 V;ACMAG=1 V;ACPHASE=0 deg;');
                 addVertex_2('static/schematic/icon_ee/vsin.ico', 40, 40, 'shape=vsin;labelPosition=left;align=right','Name=Vsin;V0=0 V;VA=1 V;FREQ=1k Hz;TD=0 ;THEAT=0 ;PHASE=0 ;');
                 addVertex_2('static/schematic/icon_ee/vpulse.ico', 40, 40, 'shape=vpulse;labelPosition=left;align=right','Name=Vpulse;V1=0 V;V2=1 V;TD=0u s;TR=0u s;TF=0u s;PW=10u s;PER=20u s;');
@@ -712,9 +712,10 @@ function ExtractSpice_2(circuit){
             for(var j=0; j<circuit[i]['port_keys'].length; j++){
                 spice += circuit[i]['port'][circuit[i]['port_keys'][j]] + " ";
             }
-            spice += circuit[i]['type'] + " ";
+            // spice += circuit[i]['type'] + " ";
             for(key in circuit[i]['value']){
                 spice += circuit[i]['value'][key] + " ";
+                // spice += circuit[i]['value'][key] ;
             }
             spice += "\n";
         }
@@ -738,13 +739,16 @@ function get_spice(graph){
 <!-- Simulator 窗口模式选择 -->
 <script> 
 
-function openMode(evt, tabMode) {
+function openMode(evt, tabMode, ducument_ID) {
   var i, tabcontent, tablinks;
-  tabcontent = document.getElementsByClassName("tabcontent");
+
+  var the_document = document.getElementById(ducument_ID);
+
+  tabcontent = the_document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
     tabcontent[i].style.display = "none";
   }
-  tablinks = document.getElementsByClassName("tablinks");
+  tablinks = the_document.getElementsByClassName("tablinks");
   for (i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
   }
@@ -1221,18 +1225,18 @@ function showOutline(graph)
                         },
                     'dc': {
                         "key"   :[ "src","start","stop","step"],
-                        "value" :[ "","","",""]
+                        "value" :[ "Vdc","0","3.3","0.1"]
                         },
                     'ac': {
                         "key"   :[ "variation", "number_of_points", "start_frequency", "stop_frequency"],
-                        "value" :[ "","","",""]
+                        "value" :[ "dec","10","1 Hz","1 MHz"]
                         }
                 };
                 
                 for(var i=0; i<sim_mode.length; i++){
                     var div_mode =  document.createElement('button');
                     div_mode.setAttribute('class',"tablinks");
-                    div_mode.setAttribute('onclick',"openMode(event, '"+ sim_mode[i] +"')");
+                    div_mode.setAttribute('onclick',"openMode(event, '"+ sim_mode[i] +"' ,'simulator')");
 
                     div_mode.innerHTML = sim_mode[i] ;
                     div_tab.appendChild(div_mode);
@@ -1294,7 +1298,7 @@ function showOutline(graph)
 
                 var w = document.body.clientWidth;
                 var h = (document.body.clientHeight || document.documentElement.clientHeight);
-                var wnd = new mxWindow('Title', frame, (w-200)/2, (h-200)/3, 400, 400, true, true);
+                var wnd = new mxWindow('Title', frame, (w-300)/2, (h-300)/3, 400, 400, true, true);
 
                 wnd.setVisible(true);
                 wnd.setScrollable(true);
@@ -1317,7 +1321,7 @@ function showOutline(graph)
 
                 var w = document.body.clientWidth;
                 var h = (document.body.clientHeight || document.documentElement.clientHeight);
-                var wnd = new mxWindow('Title', frame, (w-200)/2, (h-200)/3, 400, 400, true, true);
+                var wnd = new mxWindow('Title', frame, (w-200)/2, (h-200)/3, 700, 500, true, true);
 
                 wnd.setVisible(true);
                 wnd.setScrollable(true);

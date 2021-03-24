@@ -73,14 +73,14 @@ class SimulationInfoRequest_Handler(AuthBaseHandler):
         print(sim_type)
 
         sim_info = Container_SimResult.simulation_info_request(sim_type)
-        # sim_info = {'ab':1,'cd':2,'ef':'d2','hello':[1,2,3,4,5]}
-        print(sim_info)
+
+        # print(sim_info)
 
         sim_info_json = json.dumps( sim_info )
-        print('json transform ok !!')
+        # print('json transform ok !!')
         
         self.write( sim_info_json )
-        print("send the simulation info request successfully!!!")
+        # print("send the simulation info request successfully!!!")
 
         # self.write(json_decode(sim_info))
         # self.write("successful")
