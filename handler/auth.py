@@ -25,7 +25,7 @@ class LoginHandler(AuthBaseHandler):
             else:
                 Mongo.connect(DataBase='example',Collection=username)
                 Mongo.update(behavior='login',tags='auth')
-                self.redirect('/')
+                self.redirect('/index')
         else:
             self.write({'msg':'login fail'}) #不通过，有问题        
 

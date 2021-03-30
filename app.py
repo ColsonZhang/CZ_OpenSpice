@@ -12,7 +12,13 @@ define('port',default='9000',help='Listening port',type=int) #定义如何接受
 class Application(tornado.web.Application):  #引入Application类，重写方法，这样做的好处在于可以自定义，添加另一些功能
     def __init__(self):
         handlers = [
-            (r'/',main.IndexHandler),
+            (r'/',main.Open_Index_Zh_Handler),
+            (r'/index_test',main.IndexHandler),
+            (r'/index',main.Index_Zh_Handler),
+            (r'/index_Zh',main.Index_Zh_Handler),
+            (r'/index_En',main.Index_En_Handler),
+            (r'/open_index_Zh',main.Open_Index_Zh_Handler),
+            (r'/open_index_En',main.Open_Index_En_Handler),         
             (r'/login',auth.LoginHandler),
             (r'/logout',auth.LogoutHandler),
             (r'/register',auth.RegisterHandler),
@@ -28,6 +34,7 @@ class Application(tornado.web.Application):  #引入Application类，重写方�
         ]
         settings = dict(
             debug = False, #调试模式，修改后自动重启服务，不需要自动重启，生产情况下切勿开启，安全性
+            # autoescape = None,
             template_path='template', #模板文件目录,想要Tornado能够正确的找到html文件，需要在 Application 中指定文件的位置
             static_path='static',  #静态文件目录,可用于用于访问js,css,图片之类的添加此配置之后，tornado就能自己找到静态文件
             login_url='/login', #没有登录则跳转至此
