@@ -200,8 +200,8 @@
 
                 addVertex_2('static/schematic/icon_ee/res.ico', 80, 30, 'shape=resistor;verticalLabelPosition=top;verticalAlign=bottom','Name=R;Value=10Ohm;');
                 addVertex_2('static/schematic/icon_ee/cap.ico', 40, 30, 'shape=capacitor;verticalLabelPosition=top;verticalAlign=bottom','Name=C;Value=10pF;');
-                addVertex_2('static/schematic/icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_NMOS;Model=NMOS;Length=1um;Width=20um;');
-                addVertex_2('static/schematic/icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_PMOS;Model=PMOS;Length=1um;Width=20um;');
+                addVertex_2('static/schematic/icon_ee/nmos.ico', 60, 60, 'shape=n_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_NMOS;Model=CMOSN_180nm;Length=1um;Width=20um;');
+                addVertex_2('static/schematic/icon_ee/pmos.ico', 60, 60, 'shape=p_mosfet;verticalLabelPosition=top;verticalAlign=bottom','Name=M_PMOS;Model=CMOSP_180nm;Length=1um;Width=20um;');
                 addVertex_2('static/schematic/icon_ee/vdd.ico', 40, 30, 'shape=vdd;verticalLabelPosition=top;verticalAlign=bottom','Name=Vdd;');
                 addVertex_2('static/schematic/icon_ee/gnd.ico', 40, 40, 'shape=gnd;verticalLabelPosition=bottom;verticalAlign=top','Name=Gnd;');
                 addVertex_2('static/schematic/icon_ee/pin.ico', 40, 40, 'shape=pin;verticalLabelPosition=top;verticalAlign=bottom','Name=Pin;');
@@ -221,12 +221,30 @@
                 bottom_bar(graph);
 
                 // create a window
-                var lorem_1 = "Welcom to use CZ_SPICE,here is the user help manual !";
-                var lorem_2 = "To be continued......";
+                // var lorem_1 = "Welcom to use CZ_SPICE,here is the user help manual !";
+                // var lorem_2 = "To be continued......";
+                var attention_head = "注意事项:";
+                var attention_body = ["1.当前系统不会自动更新元件名，当引用多个相同元件时，请在执行仿真前仔细检查元件的名字是否有重复，如有重复请自行在属性中修改元件名。（Vdd和Gnd除外）",
+                                      "2.由于在后台CMOS器件统一使用了180nm的工艺库文件，所以请不要修改CMOS器件的MODEL。",
+                                      "3.系统尚不成熟，如遇bug，可以将bug的相关情况发送到colson_zhang@foxmail.com。"];
+            
+
 				var content = document.createElement('div');
-                mxUtils.writeln(content, lorem_1);
-                mxUtils.writeln(content, lorem_2);
-				wnd = new mxWindow('Help', content, 520, 50, 220, 200, true, true);
+                
+                var the_head = document.createElement('h3');
+                var the_term = document.createTextNode(attention_head);
+                the_head.appendChild(the_term);
+                content.appendChild(the_head);
+                for (var i =0 ;i<attention_body.length; i++){
+                    var paragraph  = document.createElement('p');
+                    var the_term = document.createTextNode(attention_body[i]);
+                    paragraph.appendChild(the_term);
+                    content.appendChild(paragraph);
+                }
+                
+                // mxUtils.writeln(content, lorem_1);
+                // mxUtils.writeln(content, lorem_2);
+				wnd = new mxWindow('Help', content, 520, 50, 300, 250, true, true);
 				wnd.setMaximizable(true);
 				wnd.setScrollable(true);
 				wnd.setResizable(true);
