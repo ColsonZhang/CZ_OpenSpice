@@ -40,6 +40,7 @@ app.py         ----服务器的主程序
 * `tornado`
 * `datetime`
 * `pycket`
+* `redis`
 * `pymongo`
 * `pymysql`
 

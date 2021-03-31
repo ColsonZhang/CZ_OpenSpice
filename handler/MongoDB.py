@@ -6,6 +6,7 @@ class Mongo_DB():
 
     def __init__(self, Mongo_URL = 'mongodb://localhost:27017/'):
         self.Client = MongoClient(Mongo_URL)
+        print("open mongodb success !!!")
 
     def connect(self,DataBase = 'default', Collection = 'default'):
         self.DataBase = self.Client[DataBase]
