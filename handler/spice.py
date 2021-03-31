@@ -31,6 +31,8 @@ class SimulationHandler(AuthBaseHandler):
 
     @tornado.web.authenticated
     def post(self,*args,**kwargs):
+        username = self.get_current_user()
+
         sim_type = self.get_argument('sim_type')
         properties_str = self.get_argument('properties')
         spice = self.get_argument('spice')
@@ -44,10 +46,15 @@ class SimulationHandler(AuthBaseHandler):
         simulator = Simulator_CZ()
         simulator.Get_Spice(spice)
         analysis = simulator.Sim(sim_type,properties)
+        print('properties:\n',properties)
         print('simulation finished !')         
 
         Container_SimResult.load_analysis(sim_type,analysis)
         print('data container load data successfully!! ')
+
+        message = "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
+        Mongo.connect(DataBase='example',Collection=username)
+        Mongo.update(behavior=message,tags='simulation',spice=spice)
 
         self.write("success")
 
@@ -68,6 +75,8 @@ def properties_transform(properties_str):
 class SimulationInfoRequest_Handler(AuthBaseHandler):
     @tornado.web.authenticated
     def post(self,*args,**kwargs):
+        username = self.get_current_user()
+
         sim_type = self.get_argument('sim_type')
 
         print(sim_type)
@@ -78,7 +87,11 @@ class SimulationInfoRequest_Handler(AuthBaseHandler):
 
         sim_info_json = json.dumps( sim_info )
         # print('json transform ok !!')
-        
+
+        message = "Sim_Type="+ sim_type 
+        Mongo.connect(DataBase='example',Collection=username)
+        Mongo.update(behavior=message,tags='show_result')
+
         self.write( sim_info_json )
         # print("send the simulation info request successfully!!!")
 
@@ -91,6 +104,11 @@ class Schematic_Handler(AuthBaseHandler):
     
     @tornado.web.authenticated
     def get(self,*args,**kwargs):
+        username = self.get_current_user()
+        message = 'Open the Schematic'
+        Mongo.connect(DataBase='example',Collection=username)
+        Mongo.update(behavior=message,tags='schematic')
+
         self.render('schematic/schematic.html')
 
 
