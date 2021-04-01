@@ -122,8 +122,8 @@
                 graph.foldingEnabled = false;
                 
                 //Maximum size
-                graph.maximumGraphBounds = new mxRectangle(0, 0, 800, 600)
-                graph.border = 50;
+                // graph.maximumGraphBounds = new mxRectangle(0, 0, 800, 600)
+                // graph.border = 50;
 
                 // Panning handler consumed right click so this must be
                 // disabled if right click should stop connection handler.
@@ -225,7 +225,7 @@
                 // var lorem_2 = "To be continued......";
                 var attention_head = "注意事项:";
                 var attention_body = ["1.当前系统不会自动更新元件名，当引用多个相同元件时，请在执行仿真前仔细检查元件的名字是否有重复，如有重复请自行在属性中修改元件名。（Vdd和Gnd除外）",
-                                      "2.由于在后台CMOS器件统一使用了180nm的工艺库文件，所以请不要修改CMOS器件的MODEL。",
+                                      "2.由于在后台CMOS器件统一使用了180nm的工艺库文件，所以请不要修改CMOS器件的MODEL。另外，请注意，180nm工艺库下的电源电压为3.3V！！！！",
                                       "3.系统尚不成熟，如遇bug，可以将bug的相关情况发送到colson_zhang@foxmail.com。"];
             
 

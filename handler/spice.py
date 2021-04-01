@@ -42,17 +42,20 @@ class SimulationHandler(AuthBaseHandler):
         # print("sim type:",sim_type)
         # print("property:",properties_str)
         # print("spice   :\n",spice)
+        try:
+            simulator = Simulator_CZ()
+            simulator.Get_Spice(spice)
+            analysis = simulator.Sim(sim_type,properties)
+            print('properties:\n',properties)
+            print('simulation finished !')         
 
-        simulator = Simulator_CZ()
-        simulator.Get_Spice(spice)
-        analysis = simulator.Sim(sim_type,properties)
-        print('properties:\n',properties)
-        print('simulation finished !')         
+            Container_SimResult.load_analysis(sim_type,analysis)
+            print('data container load data successfully!! ')
+            message = "Simulation: Success \n"
+        except:
+            message = "Simulation: Fail \n"
 
-        Container_SimResult.load_analysis(sim_type,analysis)
-        print('data container load data successfully!! ')
-
-        message = "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
+        message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
         Mongo.connect(DataBase='example',Collection=username)
         Mongo.update(behavior=message,tags='simulation',spice=spice)
 
