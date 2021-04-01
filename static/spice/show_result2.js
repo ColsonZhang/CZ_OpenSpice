@@ -136,9 +136,10 @@ function requestSimInfo(sim_type){
         success: function (siminfo) {
             console.log("load sim result successfully !!");
             sim_result = siminfo;
+            alert("Refresh data successfully !!!");
         },
         error: function(){
-            alert('ajax post failed !!!');
+            alert('Refresh-data failed !!!');
         }
     });
     console.log(sim_result);
