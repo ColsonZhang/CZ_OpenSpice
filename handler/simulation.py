@@ -11,7 +11,8 @@ import PySpice.Logging.Logging as Logging
 logger = Logging.setup_logging()
 
 #----调用模型库----
-libraries_path = 'D:\\Project_2020\\SPICE\\Pyspice\\libraries'
+# libraries_path = 'D:\\Project_2020\\SPICE\\Pyspice\\libraries'
+libraries_path = '/root/workspace/libraries'
 #libraries_path = find_libraries()
 spice_library = SpiceLibrary(libraries_path)
 
@@ -24,7 +25,9 @@ class Simulator_CZ :
     
 
     def Get_Spice(self, spice ):
-        the_circuit = ".include D:\\Project_2020\\SPICE\\PySpice\\libraries\cmos\\180nm_cmos.mod \n" 
+        # the_circuit = ".include D:\\Project_2020\\SPICE\\PySpice\\libraries\cmos\\180nm_cmos.mod \n"
+        the_circuit = ".include /root/workspace/libraries/cmos/180nm_cmos.mod \n"
+
         the_circuit += spice
         self.circuit.raw_spice = the_circuit
     
