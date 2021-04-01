@@ -7,6 +7,7 @@ database_passwd = "guest1234"
 database_name = "GUESTDB"
 table_name = "user_info"
 
+DEBUG = False
 
 # 打开数据库连接
 db = pymysql.connect(host=database_ip, user=database_user, password=database_passwd,  database=database_name )
@@ -24,8 +25,26 @@ def DB_Check_byName(user_name):
         passwd = results[0][2]
         return passwd
     except:
-        print("There is no the user's info !")
+        if DEBUG:
+            print("There is no the user's info !")
         return False
+
+
+def DB_Check_byEmail(email):
+    sql = "SELECT * FROM %s WHERE user_email='%s' " % (table_name,email)
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+        # 获取所有记录列表
+        results = cursor.fetchall()
+        passwd = results[0][2]
+        return passwd
+    except:
+        if DEBUG:
+            print("There is no the user's info !")
+        return False    
+    
+
 
 def DB_Insert_User(user_info):
     user_name = user_info["username"]
@@ -38,12 +57,14 @@ def DB_Insert_User(user_info):
         cursor.execute(sql)
         # 执行sql语句
         db.commit()
-        print("Insert user_info successfully!")
+        if DEBUG:
+            print("Insert user_info successfully!")
         return True
     except:
         # 发生错误时回滚
         db.rollback()
-        print("Insert user_info error!")
+        if DEBUG:
+            print("Insert user_info error!")
         return False
 
 

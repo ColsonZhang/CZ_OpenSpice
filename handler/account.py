@@ -15,6 +15,27 @@ def add_user(username,password,email=''):
     result = DB_Insert_User({'username':username,'password':password,'email':email,'date':create_time})
     return result
 
+def check_register(username,password,email):
+    check_name = DB_Check_byName(username)
+    check_email = DB_Check_byEmail(email)
+    check_pw = check_password(password)
+
+    if check_name != False:
+        return 1
+    if check_email != False:
+        return 2
+    if check_pw == False:
+        return 3
+    
+    return 0
+
+    
+def check_password(password):
+    if(len(password)<4):
+        return False
+    
+    return True
+
 # USER_DATA = {
 #     'name':'user1',
 #     'password':'1234'

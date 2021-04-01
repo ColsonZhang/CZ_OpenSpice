@@ -1,5 +1,5 @@
 from .main import AuthBaseHandler
-from .account import authenticate, add_user
+from .account import authenticate, add_user, check_register
 from .MongoDB import *
 
 DEBUG = False
@@ -62,13 +62,22 @@ class RegisterHandler(AuthBaseHandler):
         password2 = self.get_argument('password2','')
 
         if username and password1 and (password1 == password2):
-            success = add_user(username,password1,email)
-            if success:
-                Mongo.connect(DataBase='example',Collection=username)
-                Mongo.update(behavior='register',tags='auth')
-                self.redirect('/login')
-            else:
-                self.write({'msg':'register fail'})
+            flag_checck = check_register(username,password1,email)
+            if flag_checck == 0:
+                success = add_user(username,password1,email)
+                if success:
+                    Mongo.connect(DataBase='example',Collection=username)
+                    Mongo.update(behavior='register',tags='auth')
+                    self.redirect('/login')
+                else:
+                    self.write({'msg':'register fail'})
+            elif flag_checck == 1:
+                self.write({'msg':'the username is not avaliable!'})
+            elif flag_checck == 2:
+                self.write({'msg':'the email is not avaliable!'})
+            elif flag_checck == 3:
+                self.write({'msg':'the password is too shor!'})                        
+                
         else:
             if DEBUG:
                 print('register again')
