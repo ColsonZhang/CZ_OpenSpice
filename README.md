@@ -68,6 +68,7 @@ app.py         ----服务器的主程序
   * bug：PIN POUT暂时无作用
   * to do:主页面取消跳转，采用判定是否登录的方法改写login logou
   * fix：当仿真失败时，会提醒用户Fail
+  * new: 代码新增DEBUG宏变量，为False时，关闭print
 * 2021年3月31日，前后端更新
 
   * 新增：在服务器上成功部署；后端代码为适配centos服务器而做了一些修改。

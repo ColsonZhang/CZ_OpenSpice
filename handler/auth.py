@@ -2,6 +2,8 @@ from .main import AuthBaseHandler
 from .account import authenticate, add_user
 from .MongoDB import *
 
+DEBUG = False
+
 class LoginHandler(AuthBaseHandler):
     def get(self,*args,**kwargs):
         self.render('auth/login.html')
@@ -16,7 +18,8 @@ class LoginHandler(AuthBaseHandler):
         if passed:
             # 保存cookie信息到redis数据库
             self.session.set('username',username) #将前面设置的cookie设置为username，保存用户登录信息
-            print(self.session.get('username')+' login success !!!')
+            if DEBUG:
+                print(self.session.get('username')+' login success !!!')
             next_url = self.get_argument('next', '')  # 获取之前页面的路由
             if next_url:
                 Mongo.connect(DataBase='example',Collection=username)
@@ -45,11 +48,13 @@ class LogoutHandler(AuthBaseHandler):
 
 class RegisterHandler(AuthBaseHandler):
     def get(self, *args, **kwargs):
-        print('register')
+        if DEBUG:
+            print('register')
         self.render('auth/register.html')
 
     def post(self, *args, **kwargs):
-        print('registerpost')
+        if DEBUG:
+            print('registerpost')
 
         username = self.get_argument('username','')
         email = self.get_argument('email','')
@@ -65,5 +70,6 @@ class RegisterHandler(AuthBaseHandler):
             else:
                 self.write({'msg':'register fail'})
         else:
-            print('register again')
+            if DEBUG:
+                print('register again')
             self.render('auth/register.html')

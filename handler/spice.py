@@ -7,6 +7,7 @@ from .sim_data_container import Sim_Data_Container
 from tornado.escape import json_decode, json_encode, utf8
 import json
 
+DEBUG = False
 
 # from bokeh.embed import server_document
 # from jinja2 import Environment, FileSystemLoader
@@ -20,7 +21,9 @@ class SpiceHandler(AuthBaseHandler):
         username = self.get_current_user()
         message = self.get_argument('spice')
 
-        print('SpiceHandler: '+username+' \n'+message)
+        if DEBUG:
+            print('SpiceHandler: '+username+' \n'+message)
+
         Mongo.connect(DataBase='example',Collection=username)
         Mongo.update(behavior=message,tags='spice')
 
@@ -46,11 +49,14 @@ class SimulationHandler(AuthBaseHandler):
             simulator = Simulator_CZ()
             simulator.Get_Spice(spice)
             analysis = simulator.Sim(sim_type,properties)
-            print('properties:\n',properties)
-            print('simulation finished !')         
+            if DEBUG:
+                print('properties:\n',properties)
+                print('simulation finished !')         
 
             Container_SimResult.load_analysis(sim_type,analysis)
-            print('data container load data successfully!! ')
+            if DEBUG:
+                print('data container load data successfully!! ')
+                
             message = "Simulation: Success \n"
             message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
             Mongo.connect(DataBase='example',Collection=username)

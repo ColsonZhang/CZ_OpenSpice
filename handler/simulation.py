@@ -15,6 +15,8 @@ libraries_path = 'D:\\Project_2020\\SPICE\\Pyspice\\libraries'
 #libraries_path = find_libraries()
 spice_library = SpiceLibrary(libraries_path)
 
+DEBUG = False
+
 class Simulator_CZ :
     
     def __init__( self, title='simulation' ):
@@ -30,7 +32,8 @@ class Simulator_CZ :
     def Sim(self, sim_type,properties):
 
         parameter = self.Properties_Parse(sim_type,properties)
-        print("parameter:\n",parameter)
+        if DEBUG:
+            print("parameter:\n",parameter)
         self.simulator = self.circuit.simulator(temperature=25, nominal_temperature=25)
         # print('simulator:\n',self.simulator)
         if(sim_type == 'transient'):
@@ -41,7 +44,8 @@ class Simulator_CZ :
                                                      use_initial_condition = parameter['use_initial_condition'])
             return self.analysis
         elif(sim_type == 'dc' ):
-            print("doing the dc simulation !!!")
+            if DEBUG:
+                print("doing the dc simulation !!!")
             src_name = parameter['src_name']
             vstart = parameter['start']
             vstop = parameter['stop']
@@ -49,18 +53,20 @@ class Simulator_CZ :
             the_args = "{} = slice({},{},{})".format(src_name, vstart, vstop, vstep)
 
             exec("self.analysis = self.simulator.dc( {} )".format(the_args))
-
-            print("dc simulation finished !!!")
+            if DEBUG:
+                print("dc simulation finished !!!")
 
             return self.analysis
 
         elif(sim_type == 'ac' ):
-            print("doing the ac simulation !!!")
+            if DEBUG:
+                print("doing the ac simulation !!!")
             self.analysis = self.simulator.ac(  start_frequency = parameter['start_frequency'],
                                                 stop_frequency = parameter['stop_frequency'],
                                                 number_of_points = parameter['number_of_points'],
                                                 variation = parameter['variation'])
-            print("dc simulation finished !!!")
+            if DEBUG:
+                print("dc simulation finished !!!")
             return self.analysis
 
             
