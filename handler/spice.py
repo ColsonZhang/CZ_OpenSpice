@@ -56,7 +56,7 @@ class SimulationHandler(AuthBaseHandler):
             Container_SimResult.load_analysis(sim_type,analysis)
             if DEBUG:
                 print('data container load data successfully!! ')
-                
+
             message = "Simulation: Success \n"
             message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
             Mongo.connect(DataBase='example',Collection=username)
@@ -90,8 +90,8 @@ class SimulationInfoRequest_Handler(AuthBaseHandler):
         username = self.get_current_user()
 
         sim_type = self.get_argument('sim_type')
-
-        print(sim_type)
+        if DEBUG:
+            print(sim_type)
 
         sim_info = Container_SimResult.simulation_info_request(sim_type)
 
