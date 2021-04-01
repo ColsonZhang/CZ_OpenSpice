@@ -52,14 +52,17 @@ class SimulationHandler(AuthBaseHandler):
             Container_SimResult.load_analysis(sim_type,analysis)
             print('data container load data successfully!! ')
             message = "Simulation: Success \n"
+            message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
+            Mongo.connect(DataBase='example',Collection=username)
+            Mongo.update(behavior=message,tags='simulation',spice=spice)
+            self.write("success")
         except:
             message = "Simulation: Fail \n"
+            message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
+            Mongo.connect(DataBase='example',Collection=username)
+            Mongo.update(behavior=message,tags='simulation',spice=spice)
+            self.write("Fail! 请检查电路元件！！！元件名字是否有重复？")
 
-        message += "Sim_Type="+ sim_type + "\n Properties=" +properties_str 
-        Mongo.connect(DataBase='example',Collection=username)
-        Mongo.update(behavior=message,tags='simulation',spice=spice)
-
-        self.write("success")
 
 
 # 将properties 从字符串类型解析出来
